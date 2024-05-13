@@ -6,3 +6,6 @@ langchain_google_genai
 jq
 langchain_community
 langchain-text-splitters
+langchain-google-genai
+python-dotenv
+faiss-cpu

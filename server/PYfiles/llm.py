@@ -1,32 +1,39 @@
-from langchain_community.document_loaders import JSONLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_text_splitters import RecursiveJsonSplitter
+from langchain_community.document_loaders import JSONLoader # type: ignore
+from langchain_text_splitters import RecursiveCharacterTextSplitter # type: ignore
+from langchain_text_splitters import RecursiveJsonSplitter # type: ignore
 import json
 from pathlib import Path
-from pprint import pprint
+import getpass
+import os
+from dotenv import load_dotenv  # type: ignore
+from langchain_community.vectorstores import FAISS # type: ignore
+# from pprint import pprint
+# import requests
+from langchain_google_genai import GoogleGenerativeAIEmbeddings  # type: ignore
+import google.generativeai as genai # type: ignore
 
-import requests
 
-file_path='./data.json'`
+load_dotenv()
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+
+#########USE OF JSONLOADER #########
+file_path='./data.json'
 data = json.loads(Path(file_path).read_text())
 # pprint(data)
 
 
-
-
-# This is a large nested json object and will be loaded as a python dict
+#########USE OF JSONSPLITTER #########
 # json_data = requests.get(data).json()
 splitter = RecursiveJsonSplitter(max_chunk_size=300)
 json_data = data
-
-# Recursively split json data - If you need to access/manipulate the smaller json chunks
 json_chunks = splitter.split_json(json_data=json_data)
-
-# The splitter can also output documents
 docs = splitter.create_documents(texts=[json_data])
-
-# or a list of strings
 texts = splitter.split_text(json_data=json_data)
-
-print(texts[0])
+# print(texts[0])
 # print(texts[1]) 
+
+
+####USING VECTOR STORING#############
+embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+vector_store=FAISS.from_texts(texts,embeddings)
+vector_store.save_local("faiss_index")
