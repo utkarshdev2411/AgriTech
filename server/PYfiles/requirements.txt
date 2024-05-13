@@ -1,0 +1,8 @@
+google-generativeai
+python-dotenv
+langchain
+faiss-cpu
+langchain_google_genai
+jq
+langchain_community
+langchain-text-splitters

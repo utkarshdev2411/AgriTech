@@ -1,0 +1,25 @@
+{
+    "conversation": [
+      {
+        "speaker": "Alice",
+        "message": "Hey Bob, how are you doing today?",
+        "time": "2024-05-12T08:00:00Z"  
+      },
+      {
+        "speaker": "Bob",
+        "message": "Hi Alice, I'm doing well, thanks for asking! Just finished working on a project. What about you?",
+        "time": "2024-05-12T08:02:00Z"  
+      },
+      {
+        "speaker": "Alice",
+        "message": "That's great! I'm doing alright, just catching up on some emails. What kind of project were you working on?",
+        "time": "2024-05-12T08:05:00Z"  
+      },
+      {
+        "speaker": "Bob",
+        "message": "It was a website design project for a local bakery. It was a fun challenge!",
+        "time": "2024-05-12T08:07:00Z"  
+      }
+    ]
+  }
+  
