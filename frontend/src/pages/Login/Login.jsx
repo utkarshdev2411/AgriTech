@@ -13,10 +13,6 @@ const Login = () => {
 
   return (
     <div className="bg-white min-h-screen">
-
-      <h1 className=' px-20 py-5 tracking-wide text-xl font-bold'>
-        AGRITECH
-      </h1>
       <div className='flex bg-gray-100 lg:py-12 flex-col-reverse md:flex-row h-[88vh] items-center justify-center '>
 
         {/* login form  */}

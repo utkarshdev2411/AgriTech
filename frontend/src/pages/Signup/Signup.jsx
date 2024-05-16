@@ -14,7 +14,6 @@ const Signup = () => {
     console.log({
       name,
       username,
-      age,
       password,
       email
     })
@@ -24,10 +23,6 @@ const Signup = () => {
 
   return (
     <div className="bg-white min-h-screen">
-
-      <h1 className=' px-20 py-5 tracking-wide text-xl font-bold'>
-        AGRITECH
-      </h1>
       <div className='flex bg-gray-100 lg:py-12 flex-col-reverse md:flex-row min-h-[88vh] items-center justify-center '>
 
         {/* login form  */}
@@ -44,10 +39,6 @@ const Signup = () => {
             <label className='text-md mb-2 font-semibold tracking-wide' htmlFor="username">Username</label>
             <input className='px-4 mb-2 py-2 bg-transparent rounded-md text-black outline-none border-gray-500 border-[1px]' type="text" id='username' placeholder='Enter a username' value={username} onChange={(e) => { setUsername(e.target.value) }} required />
             
-            {/* age */}
-            <label className='text-md mb-2 font-semibold tracking-wide' htmlFor="age">Age</label>
-            <input className='px-4 mb-2 py-2 bg-transparent rounded-md text-black outline-none border-gray-500 border-[1px]' type="number" id='age' placeholder='Enter your age' min={15} max={100} value={age} onChange={(e) => { setAge(e.target.value) }} required />
-
             {/* email */}
             <label className='text-md mb-2 font-semibold tracking-wide' htmlFor="email">Email</label>
             <input className='px-4 mb-2 py-2 bg-transparent rounded-md text-black outline-none border-gray-500 border-[1px]' type="email" id='email' placeholder='Enter your Email' value={email} onChange={(e) => { setEmail(e.target.value) }} required />
@@ -59,7 +50,7 @@ const Signup = () => {
             {/* submit button */}
             <button type='submit' className='px-4 rounded-md py-2 bg-slate-800 text-white font-semibold' onClick={handleSubmit}> Sign up</button>
           </form>
-          <h1 className='text-sm text-center  text-gray-500'>Already have an account ?<Link to={'/login'} className='font-semibold text-gray-800'> Login here</Link></h1>
+          <h1 className='text-sm mt-4 text-center  text-gray-500'>Already have an account ?<Link to={'/login'} className='font-semibold text-gray-800'> Login here</Link></h1>
         </div>
 
         {/* png png component */}
