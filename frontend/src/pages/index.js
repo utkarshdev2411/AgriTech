@@ -1,6 +1,6 @@
-import Home from "./Home/home";
-import Login from "./Login/login";
-import Signup from "./Signup/signup";
+import Home from "./Home/Home";
+import Login from "./Login/Login";
+import Signup from "./Signup/Signup";
 
 export{
     Home,
