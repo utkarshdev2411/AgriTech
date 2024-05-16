@@ -5,7 +5,6 @@ const Signup = () => {
 
   const [name,setName]=useState("")
   const [username,setUsername]=useState("")
-  const [age,setAge]=useState(16)
   const [email,setEmail]=useState("")
   const [password,setPassword]=useState("")
 
