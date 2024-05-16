@@ -21,7 +21,7 @@ const Login = () => {
 
         {/* login form  */}
         <div className='flex w-1/2 justify-center  items-center py-10 flex-col '>
-          <form method='post' action='/user/register' className='flex max-w-fit bg-slate-200   flex-col px-16 py-10'>
+          <form method='post' action='/user/login' className='flex max-w-fit bg-slate-200   flex-col px-16 py-10'>
             <h1 className='text-xl md:text-3xl text-center font-bold tracking-wider mb-4'>WELCOME BACK</h1>
             <p className=' text-nowrap text-xs md:text-md font-semibold text-gray-600 tracking-tight mb-7'> Please enter your contact details to connect</p>
             <label className='text-md mb-2 font-semibold tracking-wide' htmlFor="username">Email</label>
