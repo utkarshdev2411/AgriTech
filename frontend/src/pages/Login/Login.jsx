@@ -30,7 +30,7 @@ const Login = () => {
             <input className='px-4 mb-4 py-2 bg-transparent rounded-md text-black outline-none border-gray-500 border-[1px]' type="password" id='password' placeholder='Enter your password' value={password} onChange={(e) => { setPassword(e.target.value) }} required />
             <button type='submit' className='px-4 rounded-md py-2 bg-slate-800 text-white font-semibold' onClick={handleSubmit}> Login</button>
           </form>
-          <h1 className='text-sm text-center mt-6 text-gray-500'>don't have an account ?<Link className='font-semibold text-gray-800'> Sign up here</Link></h1>
+          <h1 className='text-sm text-center mt-6 text-gray-500'>don't have an account ?<Link to={'/register'} className='font-semibold text-gray-800'> Sign up here</Link></h1>
         </div>
 
         {/* png png component */}

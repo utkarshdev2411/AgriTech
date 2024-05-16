@@ -59,7 +59,7 @@ const Signup = () => {
             {/* submit button */}
             <button type='submit' className='px-4 rounded-md py-2 bg-slate-800 text-white font-semibold' onClick={handleSubmit}> Sign up</button>
           </form>
-          <h1 className='text-sm text-center  text-gray-500'>Already have an account ?<Link className='font-semibold text-gray-800'> Login here</Link></h1>
+          <h1 className='text-sm text-center  text-gray-500'>Already have an account ?<Link to={'/login'} className='font-semibold text-gray-800'> Login here</Link></h1>
         </div>
 
         {/* png png component */}
