@@ -1,36 +1,48 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 
-function Login() {
+const Login = () => {
+
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+
+
+  const handleSubmit = () => {
+    console.log(email, password)
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100">
-      <div className="bg-white shadow rounded-lg px-8 py-12 max-w-md">
-        <h1 className="text-2xl font-bold text-center mb-8">AGRITECH</h1>
-        <h2 className="text-xl text-center mb-4">Welcome back</h2>
-        <form className="space-y-4">
-          <div className="flex items-center">
-            <label htmlFor="email" className="w-1/3 mr-2 text-sm font-medium">Email address</label>
-            <input type="email" id="email" className="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="name@company.com" />
-          </div>
-          <div className="flex items-center">
-            <label htmlFor="password" className="w-1/3 mr-2 text-sm font-medium">Password</label>
-          <input type="password" id="password" className="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input type="checkbox" id="remember" className="mr-2" />
-              <label htmlFor="remember" className="text-sm font-medium">Remember me</label>
-            </div>
-            <a href="#" className="text-sm text-blue-500 hover:underline">Forgot password?</a>
-          </div>
-          <button type="submit" className="w-full px-4 py-2 rounded-md bg-blue-500 text-white font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-700">Log in</button>
-          <div className="flex justify-center mt-4">
-            <a href="#" className="text-sm text-blue-500 hover:underline">Log in with Google</a>
-          </div>
-        </form>
-        <p className="text-sm text-center mt-6">Don't have an account? <a href="#" className="text-blue-500 hover:underline">Sign up here</a></p>
+    <div className="bg-white min-h-screen">
+
+      <h1 className=' px-20 py-5 tracking-wide text-xl font-bold'>
+        AGRITECH
+      </h1>
+      <div className='flex bg-gray-100 lg:py-12 flex-col-reverse md:flex-row h-[88vh] items-center justify-center '>
+
+        {/* login form  */}
+        <div className='flex w-1/2 justify-center  items-center py-10 flex-col '>
+          <form method='post' action='/user/register' className='flex max-w-fit bg-slate-200   flex-col px-16 py-10'>
+            <h1 className='text-xl md:text-3xl text-center font-bold tracking-wider mb-4'>WELCOME BACK</h1>
+            <p className=' text-nowrap text-xs md:text-md font-semibold text-gray-600 tracking-tight mb-7'> Please enter your contact details to connect</p>
+            <label className='text-md mb-2 font-semibold tracking-wide' htmlFor="username">Email</label>
+            <input className='px-4 mb-4 py-2 bg-transparent rounded-md text-black outline-none border-gray-500 border-[1px]' type='email' id='username' placeholder='Enter your Email' value={email} onChange={(e) => { setEmail(e.target.value) }} required />
+            <label className='text-md mb-2 font-semibold tracking-wide' htmlFor="password">Password</label>
+            <input className='px-4 mb-4 py-2 bg-transparent rounded-md text-black outline-none border-gray-500 border-[1px]' type="password" id='password' placeholder='Enter your password' value={password} onChange={(e) => { setPassword(e.target.value) }} required />
+            <button type='submit' className='px-4 rounded-md py-2 bg-slate-800 text-white font-semibold' onClick={handleSubmit}> Login</button>
+          </form>
+          <h1 className='text-sm text-center mt-6 text-gray-500'>don't have an account ?<Link className='font-semibold text-gray-800'> Sign up here</Link></h1>
+        </div>
+
+        {/* png png component */}
+        <div className='w-1/2 flex py-8 items-center justify-center' >
+          <img className=' w-[100%] sm:w-[70%] lg:w-[60%]' src="https://static.vecteezy.com/system/resources/previews/010/864/459/original/man-farmer-working-with-dump-truck-to-plant-carrot-agricultural-cartoon-character-illustrations-free-png.png" alt="" />
+        </div>
+
       </div>
+
+
     </div>
   )
 }
 
-export default Login
+export default Login;
