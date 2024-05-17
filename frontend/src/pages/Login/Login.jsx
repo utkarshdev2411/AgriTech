@@ -1,14 +1,30 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link,useNavigate } from 'react-router-dom'
+import axios from 'axios'
+import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify'
 
 const Login = () => {
+  const navigate = useNavigate();
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
 
-  const handleSubmit = () => {
-    console.log(email, password)
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post("http://localhost:8000/api/v1/users/login", { email, password })
+      if (res) {
+        setEmail("")
+        setPassword("")
+        toast.success("login successfully")
+        navigate('/')
+      }
+
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   return (
@@ -17,14 +33,14 @@ const Login = () => {
 
         {/* login form  */}
         <div className='flex w-1/2 justify-center  items-center py-10 flex-col '>
-          <form method='post' action='/user/login' className='flex max-w-fit bg-slate-200   flex-col px-16 py-10'>
+          <form className='flex max-w-fit bg-slate-200   flex-col px-16 py-10'>
             <h1 className='text-xl md:text-3xl text-center font-bold tracking-wider mb-4'>WELCOME BACK</h1>
             <p className=' text-nowrap text-xs md:text-md font-semibold text-gray-600 tracking-tight mb-7'> Please enter your contact details to connect</p>
-            <label className='text-md mb-2 font-semibold tracking-wide' htmlFor="username">Email</label>
-            <input className='px-4 mb-4 py-2 bg-transparent rounded-md text-black outline-none border-gray-500 border-[1px]' type='email' id='username' placeholder='Enter your Email' value={email} onChange={(e) => { setEmail(e.target.value) }} required />
+            <label className='text-md mb-2 font-semibold tracking-wide' htmlFor="email">Email</label>
+            <input className='px-4 mb-4 py-2 bg-transparent rounded-md text-black outline-none border-gray-500 border-[1px]' type='email' id='email' placeholder='Enter your Email' value={email} onChange={(e) => { setEmail(e.target.value) }} required />
             <label className='text-md mb-2 font-semibold tracking-wide' htmlFor="password">Password</label>
             <input className='px-4 mb-4 py-2 bg-transparent rounded-md text-black outline-none border-gray-500 border-[1px]' type="password" id='password' placeholder='Enter your password' value={password} onChange={(e) => { setPassword(e.target.value) }} required />
-            <button type='submit' className='px-4 rounded-md py-2 bg-slate-800 text-white font-semibold' onClick={handleSubmit}> Login</button>
+            <button className='px-4 rounded-md py-2 bg-slate-800 text-white font-semibold' onClick={(e) => handleSubmit(e)}> Login</button>
           </form>
           <h1 className='text-sm text-center mt-6 text-gray-500'>don't have an account ?<Link to={'/register'} className='font-semibold text-gray-800'> Sign up here</Link></h1>
         </div>

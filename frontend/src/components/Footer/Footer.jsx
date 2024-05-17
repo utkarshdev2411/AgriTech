@@ -3,7 +3,7 @@ import { FaFacebook,FaLinkedin,FaTwitter } from "react-icons/fa";
 const Footer = () => {
   return (
 
-      <div className='flex items-center justify-center gap-10 py-5'>
+      <div className='flex w-full bg-slate-800 text-white flex-col lg:flex-row items-center justify-center gap-4 lg:gap-10 py-5'>
        <span className='text-sm font-bold'>&copy; AGRITECH 2024</span>
        <span className='text-sm font-bold'>Privacy policy</span>
        <span className='text-sm font-bold'>Terms of use</span>
