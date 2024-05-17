@@ -1,6 +1,9 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify'
+
 
 const Signup = () => {
   const navigate=useNavigate();
@@ -20,6 +23,7 @@ const Signup = () => {
         setPassword("")
         setName("")
         setUsername("")
+        toast.success("Sign up successful")
         navigate('/')
       }
     } catch (error) {
