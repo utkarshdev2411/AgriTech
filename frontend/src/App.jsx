@@ -3,6 +3,7 @@ import React from "react";
 import { Home, Login, Signup } from "./pages";
 import {ToastContainer } from 'react-toastify'
 import Layout from "./components/Layout/Layout";
+import SoilDiagnosis from "./pages/SoilDiagnosis/SoilDiagnosis";
 
 function App() {
 
@@ -15,6 +16,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Signup />} />
+            <Route path="/soil-diagnosis" element={<SoilDiagnosis />} />
           </Route>
         </Routes>
       </BrowserRouter>
