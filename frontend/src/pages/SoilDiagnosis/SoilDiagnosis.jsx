@@ -13,6 +13,7 @@ function SoilDiagnosis() {
       reader.readAsDataURL(file);
     }
   };
+  
   return (
     <div className="sm:w-[80%] m-auto">
       <div className="flex flex-wrap">
