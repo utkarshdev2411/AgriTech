@@ -33,15 +33,12 @@ function CropDiagnosis() {
               }`}
             >
               <label htmlFor="image">
-<<<<<<< HEAD:frontend/src/pages/CropDiagnosis/CropDiagnosis.jsx
                 <div className="border border-blue-950 bg-purple-700 p-2 px-4 rounded-md text-white cursor-pointer">
                   <i className="fa-solid fa-arrow-up-from-bracket"></i> {imagePreview ? 'Edit': 'Upload'}
-=======
+                </div>
                 <div className="border border-slate-950 bg-slate-700 p-2 px-4 rounded-md text-white cursor-pointer">
                   <i className="fa-solid fa-arrow-up-from-bracket"></i>{" "}
-                  {imagePreview ? "Edit" : "Upload"}
->>>>>>> 5d26ab53fc8c63907bc5424aec25fcae8a3e0066:frontend/src/pages/SoilDiagnosis/SoilDiagnosis.jsx
-                </div>
+                  {imagePreview ? "Edit" : "Upload"}  </div>
               </label>
               <input
                 type="file"
