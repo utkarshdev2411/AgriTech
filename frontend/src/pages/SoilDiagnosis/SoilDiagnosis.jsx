@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import axios from 'axios';
 
 const SoilDiagnosis = () => {
     const { control, register, handleSubmit, watch, setValue } = useForm();
