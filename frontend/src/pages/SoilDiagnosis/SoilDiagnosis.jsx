@@ -13,7 +13,7 @@ function SoilDiagnosis() {
       reader.readAsDataURL(file);
     }
   };
-  
+
   return (
     <div className="sm:w-[80%] m-auto">
       <div className="flex flex-wrap">
@@ -24,7 +24,7 @@ function SoilDiagnosis() {
             <div className={`absolute ${imagePreview ? 'bottom-0 right-0 m-3': ''}`}>
               <label htmlFor="image">
                 <div className="border border-blue-950 bg-purple-700 p-2 px-4 rounded-md text-white cursor-pointer">
-                  <i class="fa-solid fa-arrow-up-from-bracket"></i> {imagePreview ? 'Edit': 'Upload'}
+                  <i className="fa-solid fa-arrow-up-from-bracket"></i> {imagePreview ? 'Edit': 'Upload'}
                 </div>
               </label>
               <input
