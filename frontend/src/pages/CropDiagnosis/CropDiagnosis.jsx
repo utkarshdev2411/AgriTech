@@ -32,13 +32,16 @@ function CropDiagnosis() {
                 }`}
             >
               <label htmlFor="image">
+                {/* <div className="border border-slate-950 bg-slate-700 p-2 px-4 rounded-md text-white cursor-pointer">
+                  <i className="fa-solid fa-arrow-up-from-bracket"></i>{" "}
+                  {imagePreview ? "Edit" : "Upload"}
+                </div> */}
                 <div className="border border-blue-950 bg-purple-700 p-2 px-4 rounded-md text-white cursor-pointer">
                   <i className="fa-solid fa-arrow-up-from-bracket"></i> {imagePreview ? 'Edit' : 'Upload'}
                 </div>
-                <div className="border border-slate-950 bg-slate-700 p-2 px-4 rounded-md text-white cursor-pointer">
+                {/* <div className="border border-slate-950 bg-slate-700 p-2 px-4 rounded-md text-white cursor-pointer">
                   <i className="fa-solid fa-arrow-up-from-bracket"></i>{" "}
-                  {imagePreview ? "Edit" : "Upload"}
-                </div>
+                  {imagePreview ? "Edit" : "Upload"}  </div> */}
               </label>
               <input
                 type="file"
