@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-<<<<<<< HEAD
-=======
 import axios from 'axios'
->>>>>>> shivam
+
 
 const SoilDiagnosis = () => {
     const { control, register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm();
