@@ -7,16 +7,16 @@ import { toast } from 'react-toastify'
 const Login = () => {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("")
+  const [identifier, setIdentifier] = useState("")
   const [password, setPassword] = useState("")
 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:8000/api/v1/users/login", { email, password })
+      const res = await axios.post("http://localhost:8000/api/v1/users/login", { identifier, password })
       if (res) {
-        setEmail("")
+        setIdentifier("")
         setPassword("")
         toast.success("login successfully")
         navigate('/')
@@ -36,8 +36,8 @@ const Login = () => {
           <form className='flex max-w-fit bg-slate-200   flex-col px-16 py-10'>
             <h1 className='text-xl md:text-3xl text-center font-bold tracking-wider mb-4'>WELCOME BACK</h1>
             <p className=' text-nowrap text-xs md:text-md font-semibold text-gray-600 tracking-tight mb-7'> Please enter your contact details to connect</p>
-            <label className='text-md mb-2 font-semibold tracking-wide' htmlFor="email">Email</label>
-            <input className='px-4 mb-4 py-2 bg-transparent rounded-md text-black outline-none border-gray-500 border-[1px]' type='email' id='email' placeholder='Enter your Email' value={email} onChange={(e) => { setEmail(e.target.value) }} required />
+            <label className='text-md mb-2 font-semibold tracking-wide' htmlFor="identifier">Email or Username</label>
+            <input className='px-4 mb-4 py-2 bg-transparent rounded-md text-black outline-none border-gray-500 border-[1px]' type='identifier' id='identifier' placeholder='Enter your Email or Username' value={identifier} onChange={(e) => { setIdentifier(e.target.value) }} required />
             <label className='text-md mb-2 font-semibold tracking-wide' htmlFor="password">Password</label>
             <input className='px-4 mb-4 py-2 bg-transparent rounded-md text-black outline-none border-gray-500 border-[1px]' type="password" id='password' placeholder='Enter your password' value={password} onChange={(e) => { setPassword(e.target.value) }} required />
             <button className='px-4 rounded-md py-2 bg-slate-800 text-white font-semibold' onClick={(e) => handleSubmit(e)}> Login</button>

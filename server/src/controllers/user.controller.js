@@ -75,9 +75,9 @@ const userRegister = asyncHandler(async (req, res) => {
 
 // Login
 const userLogin = asyncHandler(async (req, res) => {
-  const { username, email, password } = req.body;
+  const { identifier, password } = req.body;
 
-  if ([username, email, password].some((field) => field?.trim === "")) {
+  if ([identifier, password].some((field) => field?.trim === "")) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json(
@@ -85,7 +85,7 @@ const userLogin = asyncHandler(async (req, res) => {
       );
   }
 
-  const existedUser = await User.findOne({ $or: [{ username }, { email }] });
+  const existedUser = await User.findOne({ $or: [{ username: identifier }, { email: identifier }] });
 
   if (!existedUser) {
     return res
