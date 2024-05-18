@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function SoilDiagnosis() {
+function CropDiagnosis() {
   const [imagePreview, setImagePreview] = useState(null);
 
   const handleChange = (e) => {
@@ -13,6 +13,7 @@ function SoilDiagnosis() {
       reader.readAsDataURL(file);
     }
   };
+
   return (
     <div className="sm:w-[80%] max-w-2xl mx-4 sm:m-auto">
       <form>
@@ -69,4 +70,4 @@ function SoilDiagnosis() {
   );
 }
 
-export default SoilDiagnosis;
+export default CropDiagnosis;

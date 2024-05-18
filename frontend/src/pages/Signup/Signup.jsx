@@ -1,7 +1,12 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import axios from 'axios'
+import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify'
+
 
 const Signup = () => {
+  const navigate=useNavigate();
 
   const [name,setName]=useState("")
   const [username,setUsername]=useState("")
@@ -9,13 +14,21 @@ const Signup = () => {
   const [password,setPassword]=useState("")
 
 
-  const handleSubmit=()=>{
-    console.log({
-      name,
-      username,
-      password,
-      email
-    })
+  const handleSubmit=async(e)=>{
+    e.preventDefault();
+    try {
+      const res=await axios.post('http://localhost:8000/api/v1/users/register',{fullname:name,username,email,password})
+      if(res){
+        setEmail("")
+        setPassword("")
+        setName("")
+        setUsername("")
+        toast.success("Sign up successful")
+        navigate('/')
+      }
+    } catch (error) {
+      console.log(error)
+    }
   }
 
 
@@ -27,7 +40,7 @@ const Signup = () => {
         {/* login form  */}
         <div className='flex w-full md:w-1/2 bg-slate-200 md:bg-gray-100 justify-center  items-center  flex-col '>
 
-          <form method='post' action='/user/register' className='flex max-w-fit bg-slate-200   flex-col px-16 py-6'>
+          <form  className='flex max-w-fit bg-slate-200 flex-col px-16 py-6'>
             <h1 className='text-xl md:text-3xl text-center font-bold tracking-wider mb-4'>Create an Account</h1>
             <p className=' text-nowrap text-xs md:text-md font-semibold text-gray-600 tracking-tight mb-5'>Please enter your contact details to connect</p>
             {/* name */}
@@ -47,7 +60,7 @@ const Signup = () => {
             <input className='px-4 mb-2 py-2 bg-transparent rounded-md text-black outline-none border-gray-500 border-[1px]' type="password" id='password' placeholder='Enter your password' value={password} onChange={(e) => { setPassword(e.target.value) }} required />
 
             {/* submit button */}
-            <button type='submit' className='px-4 rounded-md py-2 bg-slate-800 text-white font-semibold' onClick={handleSubmit}> Sign up</button>
+            <button className='px-4 rounded-md py-2 bg-slate-800 text-white font-semibold' onClick={(e)=>handleSubmit(e)}> Sign up</button>
           </form>
           <h1 className='text-sm mt-4 text-center  text-gray-500'>Already have an account ?<Link to={'/login'} className='font-semibold text-gray-800'> Login here</Link></h1>
         </div>
