@@ -16,7 +16,7 @@ function CropDiagnosis() {
 
   return (
     <div className="sm:w-[80%] max-w-2xl mx-4 sm:m-auto">
-      <form>
+      <form action="{{ url_for('predict')}}" method="POST" enctype="multipart/form-data">
         <h1 className="text-2xl font-bold">Username</h1>
         <h2 className="text-xl my-2 font-semibold">
           Upload image to get the best result:
@@ -44,11 +44,7 @@ function CropDiagnosis() {
                   {imagePreview ? "Edit" : "Upload"}  </div> */}
               </label>
               <input
-                type="file"
-                id="image"
-                accept="image/*"
-                className="hidden"
-                onChange={handleChange}
+               type="file" name="file" accept=".jpg, .jpeg, .png" required="required"
               />
             </div>
           </div>
@@ -69,7 +65,7 @@ function CropDiagnosis() {
           className="w-full border border-gray-400 outline-none p-4"
           placeholder="Upload the image and click the predict button to get the result..."
           readOnly
-        ></textarea>
+        >  {{ prediction_text }}</textarea>
       </div>
     </div>
   );
