@@ -83,7 +83,7 @@ prompt="extract the numerical data and give the value along with its relations w
 
 model=genai.GenerativeModel('gemini-pro-vision')
 response=model.generate_content([pdf_parts[0], prompt])
-# print(response.text) 
+print(response.text) 
 
 
 
@@ -144,11 +144,11 @@ text=docs[0].page_content
 
 embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
 
-user_question = "what irrigation methods can I perform?"
+user_question = "Should I use fertilizers for the crops or not?give few examples of the crops that require fertilizers as per my requirements."
 
-prompt="You are agriculturist and research expert whose aim is to help the farmers to enhance their productivity by helping them in modernization and sharing scientific aspects.  if you are not able to get any contenxt from the data or not recieved any informatin, then generate your own behalf which reseblence to the query and help the farmers as much as possible. use your own nlp for the purpose. Also avoid any unnecessary information. Give the response in paragraph format in upto one hundred words in a proper structure."
+prompt="You are agriculturist and research expert whose aim is to help the farmers to enhance their productivity by helping them in modernization and sharing scientific aspects.  if you are not able to get any contenxt from the data or not recieved any informatin, then generate your own behalf which reseblence to the query and help the farmers as much as possible. use your own nlp for the purpose. Also avoid any unnecessary information. Give the response in paragraph format in upto one hundred words in a proper structure."+" "+text+""+user_question
 
-model=genai.GenerativeModel('gemini-pro')
+model=genai.GenerativeModel(model_name="models/gemini-1.5-pro-latest")
 response=model.generate_content([user_question,text,prompt])
 
 query_answer=response.text
