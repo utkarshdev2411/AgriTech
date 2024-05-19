@@ -46,6 +46,7 @@ const userRegister = asyncHandler(async (req, res) => {
   await newUser.save();
 
   const token = await newUser.generateAccessToken();
+  console.log({ token, newUser })
 
   const createdUser = await User.findById(newUser._id).select("-password");
 
@@ -62,8 +63,8 @@ const userRegister = asyncHandler(async (req, res) => {
   }
 
   return res
+    .cookie("token", token,options)
     .status(StatusCodes.CREATED)
-    .cookie("token", token, options)
     .json(
       new ApiResponse(
         StatusCodes.CREATED,
@@ -264,7 +265,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   ).select("-password");
 
   await user.save()
-  
+
   if (oldAvatarURL !== process.env.DEFAULT_AVATAR) {
     const avatarPublicId = oldAvatarURL
       .split("/v")[1]
