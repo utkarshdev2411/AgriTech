@@ -16,15 +16,16 @@ function App() {
 
   return (
     <>
+    <ToastContainer />
       <BrowserRouter>
-        <ToastContainer />
         <Routes>
-          <Route path="/" element={<Layout />}>
+          <Route path='/' element={<Layout />}>
             <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Signup />} />
-            <Route path="/cropdiagnosis" element={<CropDiagnosis />} />
-            <Route path="/soildiagnosis" element={<SoilDiagnosis />} />
+            {/* <Route path='/profile' element={<ProtectedUser><UserProfile /></ProtectedUser>} /> */}
+            <Route path='/login' element={<ProtectedRouting><Login /></ProtectedRouting>} />
+            <Route path='/register' element={<ProtectedRouting><Signup /></ProtectedRouting>} />
+            <Route path="/cropdiagnosis" element={<ProtectedUser><CropDiagnosis /></ProtectedUser>} />
+            <Route path="/soildiagnosis" element={<ProtectedUser><SoilDiagnosis /></ProtectedUser>} />
           </Route>
         </Routes>
       </BrowserRouter>
