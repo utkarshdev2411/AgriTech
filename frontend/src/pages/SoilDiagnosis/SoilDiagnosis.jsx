@@ -4,35 +4,35 @@ import axios from 'axios'
 
 
 const SoilDiagnosis = () => {
-    const { control, register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm();
+    const { control, register, handleSubmit, watch,reset, setValue, formState: { errors, isSubmitting } } = useForm();
     const [isCustom, setIsCustom] = useState(false);
     const [report, setReport] = useState();
     const selectedOption = watch('irrigation', '');
 
 
-    const onSubmit = async(data) => {
-        console.log({ data, report })
+    const onSubmit = async (data) => {
+        
+        const formData = new FormData();
 
-        const formData=new FormData();
-
-        formData.append("content",data)
-        formData.append("report",report)
+        formData.append("content", data)
+        formData.append("report", report)
         console.log(formData)
 
-        await axios.post('http://localhost:8000/diagnosis/soil',formData,{
-            headers:{
-                "Content-Type":"multipart/form-data"
+        await axios.post('http://localhost:8000/diagnosis/soil', formData, {
+            headers: {
+                "Content-Type": "multipart/form-data"
             }
-        }).then((res)=>{
+        }).then((res) => {
             console.log(res)
-        }).catch(err=>{
+        }).catch(err => {
             console.log(err)
         })
+        reset(); 
     }
 
     return (
 
-        <div className=' min-h-[88vh] w-full flex flex-col lg:flex-row items-center sm:p-5 lg:p-0 justify-center gap-20  bg-green-50'>
+        <div className=' min-h-[88vh] w-full flex flex-col lg:flex-row items-center sm:p-5 lg:p-0 justify-center gap-20  bg-[#f4fdf7]'>
             <div className=' flex flex-col-reverse justify-center  h-full'>
 
                 {/* form section */}
@@ -143,9 +143,11 @@ const SoilDiagnosis = () => {
 
             {/* output section */}
 
-            <div style={{ scrollbarWidth: "none" }} className='relative h-[60vh] overflow-y-auto  w-full lg:w-[30vw] rounded-md bg-slate-50 border-[2px] border-slate-400 px-8 py-8'>
-                <h1 className='text-center text-xl sticky flex items-center justify-center -top-1 h-10 bg-white mb-3 left-1/2 text-slate-800 font-semibold tracking-wide'>Result Shown here</h1>
-                <p className='text-sm text-gray-800'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Sequi assumenda perspiciatis impedit fugiat voluptatibus optio nihil distinctio sunt error voluptatum quam, facere natus doloribus inventore iure culpa nesciunt earum tenetur nulla eaque maxime aspernatur illo molestiae! Architecto reprehenderit autem est ex perferendis totam officia corrupti, maxime qui saepe expedita possimus distinctio natus, consectetur itaque voluptatibus exercitationem at ullam nesciunt nulla non iste facere quae deleniti? Modi consequatur officiis nesciunt, quos eum explicabo. Possimus libero quasi quo? Labore fugiat officiis, autem doloribus possimus dolore quas quasi sit itaque at beatae in minus voluptates animi magnam qui a totam? Explicabo, quia illo. Lorem ipsum dolor sit amet consectetur adipisicing elit. Unde, at ratione numquam natus saepe, quo odit voluptates minus architecto quos iure non assumenda ex officiis eaque neque vel excepturi, debitis possimus voluptas sequi sunt. In quibusdam voluptates quo saepe, dolores totam nostrum incidunt quisquam debitis at nesciunt, corrupti commodi? Saepe aspernatur similique nesciunt dolorum unde odio facilis natus corporis eius perspiciatis nam tempora ex minus voluptatem dolores excepturi reprehenderit, eos quia ullam libero nisi! Corporis maiores incidunt sapiente expedita omnis officiis facere quod molestias rem, voluptatem doloribus ad magnam, voluptas facilis, reprehenderit maxime? Corrupti laboriosam magnam dignissimos quibusdam voluptatem iure!</p>
+            <div style={{ scrollbarWidth: "none" }} className='relative h-[60vh] overflow-y-auto  w-full lg:w-[30vw] rounded-md bg-slate-50 border-[2px] border-slate-400 '>
+                <h1 className='text-center text-xl sticky flex items-center justify-center top-0 h-10 bg-slate-800 bg-opacity-85 text-white mb-3 left-1/2 t font-semibold tracking-wide'>Result Shown here</h1>
+                <div className='px-8 mb-4'>
+                    <p className='text-sm text-gray-800'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Sequi assumenda perspiciatis impedit fugiat voluptatibus optio nihil distinctio sunt error voluptatum quam, facere natus doloribus inventore iure culpa nesciunt earum tenetur nulla eaque maxime aspernatur illo molestiae! Architecto reprehenderit autem est ex perferendis totam officia corrupti, maxime qui saepe expedita possimus distinctio natus, consectetur itaque voluptatibus exercitationem at ullam nesciunt nulla non iste facere quae deleniti? Modi consequatur officiis nesciunt, quos eum explicabo. Possimus libero quasi quo? Labore fugiat officiis, autem doloribus possimus dolore quas quasi sit itaque at beatae in minus voluptates animi magnam qui a totam? Explicabo, quia illo. Lorem ipsum dolor sit amet consectetur adipisicing elit. Unde, at ratione numquam natus saepe, quo odit voluptates minus architecto quos iure non assumenda ex officiis eaque neque vel excepturi, debitis possimus voluptas sequi sunt. In quibusdam voluptates quo saepe, dolores totam nostrum incidunt quisquam debitis at nesciunt, corrupti commodi? Saepe aspernatur similique nesciunt dolorum unde odio facilis natus corporis eius perspiciatis nam tempora ex minus voluptatem dolores excepturi reprehenderit, eos quia ullam libero nisi! Corporis maiores incidunt sapiente expedita omnis officiis facere quod molestias rem, voluptatem doloribus ad magnam, voluptas facilis, reprehenderit maxime? Corrupti laboriosam magnam dignissimos quibusdam voluptatem iure!</p>
+                </div>
             </div>
         </div>
 

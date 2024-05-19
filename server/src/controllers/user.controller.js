@@ -17,15 +17,15 @@ const userRegister = asyncHandler(async (req, res) => {
       );
   }
 
-  const existedUserByUsername = await User.findOne({ username });
+  // const existedUserByUsername = await User.findOne({ username });
 
-  if (existedUserByUsername) {
-    return res
-      .status(StatusCodes.CONFLICT)
-      .json(
-        new ApiResponse(StatusCodes.CONFLICT, {}, "Username already existed")
-      );
-  }
+  // if (existedUserByUsername) {
+  //   return res
+  //     .status(StatusCodes.CONFLICT)
+  //     .json(
+  //       new ApiResponse(StatusCodes.CONFLICT, {}, "Username already existed")
+  //     );
+  // }
 
   const existedUserByEmail = await User.findOne({ email });
 
@@ -35,6 +35,7 @@ const userRegister = asyncHandler(async (req, res) => {
       .json(new ApiResponse(StatusCodes.CONFLICT, {}, "Email already existed"));
   }
 
+  
   const newUser = await User.create({
     fullname,
     username,
@@ -62,16 +63,17 @@ const userRegister = asyncHandler(async (req, res) => {
     );
   }
 
-  return res
-    .cookie("token", token,options)
+  return (
+    res
     .status(StatusCodes.CREATED)
+    .cookie("token", token,options)
     .json(
       new ApiResponse(
         StatusCodes.CREATED,
         createdUser,
         "User registered successfully"
       )
-    );
+    ));
 });
 
 // Login

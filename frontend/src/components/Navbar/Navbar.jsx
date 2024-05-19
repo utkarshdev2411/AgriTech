@@ -1,17 +1,27 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 
 const Navbar = () => {
+  const user = false;
   return (
     <div className='w-full bg-slate-50 flex py-6 items-center justify-around'>
-      <h1 className='text-xl font-semibold tracking-wider '>
+      <Link to={'/'} className='text-xl font-bold tracking-wider '>
         AGRITECH
-      </h1>
+      </Link>
 
       <div className='flex gap-6 items-center'>
-        <Link to={'/'} className='text-md tracking-wider font-medium'>Home</Link>
-        <Link to={'/'} className='text-md tracking-wider font-medium'>Diagnosis</Link>
-        <Link  to={'/'} className='text-md tracking-wider font-medium'>Community</Link>
+        <NavLink to={'/'}  className={({isActive}) => {
+          return `text-md tracking-wider hover:text-blue-500 font-medium ${isActive ? "text-blue-700" : ""}`
+        }}>Home</NavLink>
+
+        <NavLink to={'/diagnosis'}  className={({isActive}) => {
+          return `text-md tracking-wider hover:text-blue-500 font-medium ${isActive ? "text-blue-700" : ""}`
+        }}>Diagnosis</NavLink>
+
+        <NavLink to={'/commmunity'}  className={({isActive}) => {
+          return `text-md tracking-wider hover:text-blue-500 font-medium ${isActive ? "text-blue-700" : ""}`
+        }}>Community</NavLink>
+        {!user && <Link to={'/login'} className='px-4 py-2 bg-slate-800 hover:bg-slate-600 text-md text-white rounded-md font-bold' >Login</Link>}
       </div>
 
     </div>
