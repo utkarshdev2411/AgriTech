@@ -33,6 +33,9 @@ const userSchema = new Schema(
     bio: {
       type: String,
     },
+    links: {
+      type: Object,
+    },
   },
   { timestamps: true }
 );

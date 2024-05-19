@@ -1,24 +1,25 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import axios from 'axios'
 import 'react-toastify/dist/ReactToastify.css';
 import { toast } from 'react-toastify'
+import { useDispatch } from 'react-redux';
+import { loginAPI } from '../../store/services/userAction';
 import { useForm } from 'react-hook-form';
 
 const Login = () => {
   const navigate = useNavigate();
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm();
+  const dispatch = useDispatch()
 
 
   const onSubmit = async (data) => {
     try {
-      const res = await axios.post("http://localhost:8000/api/v1/users/login", { identifier:data.email,password:data.password })
+      const res = dispatch(loginAPI({identifier:data.email, password:data.password}))
       if (res) {
         reset();
         toast.success("login successfully")
         navigate('/')
       }
-
     } catch (error) {
       toast.error(error.response.request.statusText+" : "+error.response.data.message )
       console.log(error)
@@ -45,7 +46,7 @@ const Login = () => {
             <input
               {...register("password", {
                 required: "Length of password 6 or more",
-                minLength: 5,
+                minLength: 6,
               })} className='px-4 mb-2 py-2 bg-transparent rounded-md text-black outline-none border-gray-500 border-[1px]' type="password" id='password' placeholder='Enter a password' />
             {errors.password && <h1 className='text-red-500 text-sm -mt-2' >*{errors.password.message}</h1>}
             <button type='submit' className='px-4 rounded-md py-2 bg-slate-800 text-white font-semibold'> Login</button>

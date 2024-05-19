@@ -1,25 +1,30 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import React from "react";
 import { Home, Login, Signup,CropDiagnosis,SoilDiagnosis } from "./pages";
 import {ToastContainer } from 'react-toastify'
+>>>>>>> 551f560708515e5e7cd41aeb52676d4007d54f2c
 import Layout from "./components/Layout/Layout";
 
-const user=true;
 
 function App() {
+  const [user, setUser] = useState(null)
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    dispatch(getCurrentUserAPI())
+  }, []);
 
   return (
     <>
-    <ToastContainer />
       <BrowserRouter>
+        <ToastContainer />
         <Routes>
-          <Route path='/' element={<Layout />}>
+          <Route path="/" element={<Layout />}>
             <Route path="/" element={<Home />} />
-            {/* <Route path='/profile' element={<ProtectedUser><UserProfile /></ProtectedUser>} /> */}
-            <Route path='/login' element={<ProtectedRouting><Login /></ProtectedRouting>} />
-            <Route path='/register' element={<ProtectedRouting><Signup /></ProtectedRouting>} />
-            <Route path="/cropdiagnosis" element={<ProtectedUser><CropDiagnosis /></ProtectedUser>} />
-            <Route path="/soildiagnosis" element={<ProtectedUser><SoilDiagnosis /></ProtectedUser>} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Signup />} />
+            <Route path="/cropdiagnosis" element={<CropDiagnosis />} />
+            <Route path="/soildiagnosis" element={<SoilDiagnosis />} />
           </Route>
         </Routes>
       </BrowserRouter>
