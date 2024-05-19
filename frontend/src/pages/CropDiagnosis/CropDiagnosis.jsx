@@ -1,7 +1,9 @@
+
 import React, { useState } from "react";
 
 function CropDiagnosis() {
   const [imagePreview, setImagePreview] = useState(null);
+  const [predictionText, setPredictionText] = useState(''); // Add this line
 
   const handleChange = (e) => {
     const file = e.target.files[0];
@@ -14,9 +16,23 @@ function CropDiagnosis() {
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append('file', e.target.file.files[0]);
+
+    const response = await fetch('http://localhost:5123/predict', {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await response.json();
+    setPredictionText(data.prediction_text); // Update the prediction text
+  };
+
   return (
     <div className="sm:w-[80%] max-w-2xl mx-4 sm:m-auto">
-      <form action="{{ url_for('predict')}}" method="POST" enctype="multipart/form-data">
+      <form onSubmit={handleSubmit} enctype="multipart/form-data">
         <h1 className="text-2xl font-bold">Username</h1>
         <h2 className="text-xl my-2 font-semibold">
           Upload image to get the best result:
@@ -32,19 +48,14 @@ function CropDiagnosis() {
                 }`}
             >
               <label htmlFor="image">
-                {/* <div className="border border-slate-950 bg-slate-700 p-2 px-4 rounded-md text-white cursor-pointer">
-                  <i className="fa-solid fa-arrow-up-from-bracket"></i>{" "}
-                  {imagePreview ? "Edit" : "Upload"}
-                </div> */}
+              
                 <div className="border border-blue-950 bg-purple-700 p-2 px-4 rounded-md text-white cursor-pointer">
                   <i className="fa-solid fa-arrow-up-from-bracket"></i> {imagePreview ? 'Edit' : 'Upload'}
                 </div>
-                {/* <div className="border border-slate-950 bg-slate-700 p-2 px-4 rounded-md text-white cursor-pointer">
-                  <i className="fa-solid fa-arrow-up-from-bracket"></i>{" "}
-                  {imagePreview ? "Edit" : "Upload"}  </div> */}
+               
               </label>
               <input
-               type="file" name="file" accept=".jpg, .jpeg, .png" required="required"
+                type="file" name="file" accept=".jpg, .jpeg, .png" required="required" onChange={handleChange}
               />
             </div>
           </div>
@@ -65,7 +76,8 @@ function CropDiagnosis() {
           className="w-full border border-gray-400 outline-none p-4"
           placeholder="Upload the image and click the predict button to get the result..."
           readOnly
-        >  {{ prediction_text }}</textarea>
+          value={predictionText} // Use the prediction text state variable here
+        />
       </div>
     </div>
   );
