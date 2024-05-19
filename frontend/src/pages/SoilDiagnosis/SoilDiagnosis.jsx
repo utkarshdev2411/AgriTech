@@ -12,9 +12,15 @@ const SoilDiagnosis = () => {
 
     const onSubmit = async (data) => {
         
+        const irrigation = selectedOption === 'custom' ? data.customIrrigation : data.irrigation;
+        
+        // Create a FormData object to hold the form data
         const formData = new FormData();
-
-        formData.append("content", data)
+        
+        formData.append('rainfall', data.rainfall);
+        formData.append('temp', data.temp);
+        formData.append('area', data.area);
+        formData.append('irrigation', irrigation);
         formData.append("report", report)
         console.log(formData)
 
@@ -24,13 +30,14 @@ const SoilDiagnosis = () => {
             }
         }).then((res) => {
             console.log(res)
+
         }).catch(err => {
             console.log(err)
         })
         reset(); 
     }
-
-    return (
+    
+     return (
 
         <div className=' min-h-[88vh] w-full flex flex-col lg:flex-row items-center sm:p-5 lg:p-0 justify-center gap-20  bg-[#f4fdf7]'>
             <div className=' flex flex-col-reverse justify-center  h-full'>

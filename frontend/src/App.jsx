@@ -23,12 +23,13 @@ function App() {
         <Routes>
           <Route path='/' element={<Layout />}>
             <Route path="/" element={<Home />} />
-            <Route path='/profile' element={<ProtectedUser user={data} ><UserProfile /></ProtectedUser>} />
-            <Route path='/login' element={<ProtectedRouting user={data} ><Login /></ProtectedRouting>} />
-            <Route path='/register' element={<ProtectedRouting><Signup /></ProtectedRouting>} />
-            <Route path="/cropdiagnosis" element={<ProtectedUser><CropDiagnosis /></ProtectedUser>} />
-            <Route path="/soildiagnosis" element={<ProtectedUser><SoilDiagnosis /></ProtectedUser>} />
+            <Route path='/profile' element={<UserProfile /> } />
+            <Route path='/login' element={<Login />} />
+            <Route path='/register' element={<Signup />} />
+            <Route path="/cropdiagnosis" element={<CropDiagnosis />} />
+            <Route path="/soildiagnosis" element={<SoilDiagnosis />} />
           </Route>
+       
         </Routes>
       </BrowserRouter>
     </>
