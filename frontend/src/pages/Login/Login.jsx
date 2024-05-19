@@ -3,9 +3,12 @@ import { Link,useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import 'react-toastify/dist/ReactToastify.css';
 import { toast } from 'react-toastify'
+import { useDispatch } from 'react-redux';
+import { loginAPI } from '../../store/services/userAction';
 
 const Login = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch()
 
   const [identifier, setIdentifier] = useState("")
   const [password, setPassword] = useState("")
@@ -14,14 +17,13 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:8000/api/v1/users/login", { identifier, password })
+      const res = dispatch(loginAPI({identifier, password}))
       if (res) {
         setIdentifier("")
         setPassword("")
         toast.success("login successfully")
         navigate('/')
       }
-
     } catch (error) {
       console.log(error)
     }

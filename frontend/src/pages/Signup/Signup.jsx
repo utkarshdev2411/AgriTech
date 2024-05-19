@@ -3,10 +3,12 @@ import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import 'react-toastify/dist/ReactToastify.css';
 import { toast } from 'react-toastify'
-
+import {useDispatch} from 'react-redux'
+import { signupAPI } from '../../store/services/userAction';
 
 const Signup = () => {
   const navigate=useNavigate();
+  const dispatch = useDispatch()
 
   const [name,setName]=useState("")
   const [username,setUsername]=useState("")
@@ -17,7 +19,7 @@ const Signup = () => {
   const handleSubmit=async(e)=>{
     e.preventDefault();
     try {
-      const res=await axios.post('http://localhost:8000/api/v1/users/register',{fullname:name,username,email,password})
+      const res = dispatch(signupAPI({fullname: name, username, email, password}))
       if(res){
         setEmail("")
         setPassword("")

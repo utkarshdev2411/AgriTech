@@ -154,7 +154,7 @@ const userLogout = asyncHandler(async (_, res) => {
 
 // Update User Account Details
 const updateUserAccountDetails = asyncHandler(async (req, res) => {
-  const { fullname, username, bio } = req.body;
+  const { fullname, username, bio, addLinks } = req.body;
 
   if (!fullname || !username) {
     throw new ApiError(
@@ -182,14 +182,21 @@ const updateUserAccountDetails = asyncHandler(async (req, res) => {
       );
   }
 
-  const updatedUser = await User.findByIdAndUpdate(
+  const updateUser = {
+    fullname,
+    username,
+    bio,
+  };
+
+  if (addLinks) {
+    updateUser.links = addLinks;
+  }
+
+  const user = await User.findByIdAndUpdate(
     req.user._id,
+
     {
-      $set: {
-        fullname,
-        username,
-        bio,
-      },
+      $set: updateUser,
     },
     {
       new: true,
@@ -199,7 +206,7 @@ const updateUserAccountDetails = asyncHandler(async (req, res) => {
   return res
     .status(StatusCodes.OK)
     .json(
-      new ApiResponse(StatusCodes.OK, updatedUser, "User updated successfully!")
+      new ApiResponse(StatusCodes.OK, user, "User updated successfully!")
     );
 });
 
@@ -246,10 +253,12 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 
   const avatar = await uploadOnCloudinary(avatarLocalPath);
 
+  console.log(avatar)
+
   if (!avatar.secure_url) {
     throw new ApiError(
       StatusCodes.INTERNAL_SERVER_ERROR,
-      "Error while uploading on avatar"
+      "Error while uploading on cloudinary"
     );
   }
 
