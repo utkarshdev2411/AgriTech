@@ -3,7 +3,8 @@ import React from "react";
 import { Home, Login, Signup,CropDiagnosis,SoilDiagnosis } from "./pages";
 import {ToastContainer } from 'react-toastify'
 import Layout from "./components/Layout/Layout";
-
+import { useDispatch } from "react-redux";
+import { getCurrentUserAPI } from "./store/services/userAction";
 
 function App() {
   const [user, setUser] = useState(null)
