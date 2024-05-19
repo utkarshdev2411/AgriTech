@@ -17,15 +17,15 @@ const userRegister = asyncHandler(async (req, res) => {
       );
   }
 
-  const existedUserByUsername = await User.findOne({ username });
+  // const existedUserByUsername = await User.findOne({ username });
 
-  if (existedUserByUsername) {
-    return res
-      .status(StatusCodes.CONFLICT)
-      .json(
-        new ApiResponse(StatusCodes.CONFLICT, {}, "Username already existed")
-      );
-  }
+  // if (existedUserByUsername) {
+  //   return res
+  //     .status(StatusCodes.CONFLICT)
+  //     .json(
+  //       new ApiResponse(StatusCodes.CONFLICT, {}, "Username already existed")
+  //     );
+  // }
 
   const existedUserByEmail = await User.findOne({ email });
 
@@ -35,6 +35,7 @@ const userRegister = asyncHandler(async (req, res) => {
       .json(new ApiResponse(StatusCodes.CONFLICT, {}, "Email already existed"));
   }
 
+  
   const newUser = await User.create({
     fullname,
     username,
@@ -46,6 +47,7 @@ const userRegister = asyncHandler(async (req, res) => {
   await newUser.save();
 
   const token = await newUser.generateAccessToken();
+  console.log({ token, newUser })
 
   const createdUser = await User.findById(newUser._id).select("-password");
 
@@ -61,16 +63,17 @@ const userRegister = asyncHandler(async (req, res) => {
     );
   }
 
-  return res
+  return (
+    res
     .status(StatusCodes.CREATED)
-    .cookie("token", token, options)
+    .cookie("token", token,options)
     .json(
       new ApiResponse(
         StatusCodes.CREATED,
         createdUser,
         "User registered successfully"
       )
-    );
+    ));
 });
 
 // Login
@@ -154,7 +157,7 @@ const userLogout = asyncHandler(async (_, res) => {
 
 // Update User Account Details
 const updateUserAccountDetails = asyncHandler(async (req, res) => {
-  const { fullname, username, bio } = req.body;
+  const { fullname, username, bio, addLinks } = req.body;
 
   if (!fullname || !username) {
     throw new ApiError(
@@ -182,14 +185,21 @@ const updateUserAccountDetails = asyncHandler(async (req, res) => {
       );
   }
 
-  const updatedUser = await User.findByIdAndUpdate(
+  const updateUser = {
+    fullname,
+    username,
+    bio,
+  };
+
+  if (addLinks) {
+    updateUser.links = addLinks;
+  }
+
+  const user = await User.findByIdAndUpdate(
     req.user._id,
+
     {
-      $set: {
-        fullname,
-        username,
-        bio,
-      },
+      $set: updateUser,
     },
     {
       new: true,
@@ -199,7 +209,7 @@ const updateUserAccountDetails = asyncHandler(async (req, res) => {
   return res
     .status(StatusCodes.OK)
     .json(
-      new ApiResponse(StatusCodes.OK, updatedUser, "User updated successfully!")
+      new ApiResponse(StatusCodes.OK, user, "User updated successfully!")
     );
 });
 
@@ -246,10 +256,12 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 
   const avatar = await uploadOnCloudinary(avatarLocalPath);
 
+  console.log(avatar)
+
   if (!avatar.secure_url) {
     throw new ApiError(
       StatusCodes.INTERNAL_SERVER_ERROR,
-      "Error while uploading on avatar"
+      "Error while uploading on cloudinary"
     );
   }
 
@@ -265,7 +277,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   ).select("-password");
 
   await user.save()
-  
+
   if (oldAvatarURL !== process.env.DEFAULT_AVATAR) {
     const avatarPublicId = oldAvatarURL
       .split("/v")[1]
