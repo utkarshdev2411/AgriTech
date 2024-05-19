@@ -1,14 +1,11 @@
 import React, { useState } from "react";
-import axios from "axios";
 
 function CropDiagnosis() {
   const [imagePreview, setImagePreview] = useState(null);
-  const [file, setFile] = useState(null);
-  const [prediction, setPrediction] = useState("");
+  const [predictionText, setPredictionText] = useState(''); // Add this line
 
   const handleChange = (e) => {
     const file = e.target.files[0];
-    setFile(file);
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
@@ -21,46 +18,43 @@ function CropDiagnosis() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', e.target.file.files[0]);
 
-    try {
-      const response = await axios.post('http://127.0.0.1:5000/predict', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-      setPrediction(`Label: ${response.data.label}, Score: ${response.data.score}`);
-    } catch (error) {
-      console.error('Error uploading the file:', error);
-      setPrediction('Error making prediction');
-    }
+    const response = await fetch('http://localhost:5123/predict', {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await response.json();
+    setPredictionText(data.prediction_text); // Update the prediction text
   };
 
   return (
     <div className="sm:w-[80%] max-w-2xl mx-4 sm:m-auto">
-      <form onSubmit={handleSubmit}>
-        <h1 className="text-2xl font-bold">Crop Diagnosis</h1>
+      <form onSubmit={handleSubmit} enctype="multipart/form-data">
+        <h1 className="text-2xl font-bold">Username</h1>
         <h2 className="text-xl my-2 font-semibold">
           Upload image to get the best result:
         </h2>
         <div className="w-full border border-black h-[15rem] sm:h-[20rem] rounded-xl overflow-hidden m-auto">
           <div className="flex justify-center items-center h-full w-full relative">
             {imagePreview && (
-              <img src={imagePreview} alt="image" className="h-full w-full object-cover" />
+              <img src={imagePreview} alt="image" className="h-full w-full" />
             )}
-            <div className={`absolute ${imagePreview ? "bottom-0 right-0 m-3" : ""}`}>
+
+            <div
+              className={`absolute ${imagePreview ? "bottom-0 right-0 m-3" : ""
+                }`}
+            >
               <label htmlFor="image">
+              
                 <div className="border border-blue-950 bg-purple-700 p-2 px-4 rounded-md text-white cursor-pointer">
-                  <i className="fa-solid fa-arrow-up-from-bracket"></i>{" "}
-                  {imagePreview ? "Edit" : "Upload"}
+                  <i className="fa-solid fa-arrow-up-from-bracket"></i> {imagePreview ? 'Edit' : 'Upload'}
                 </div>
+               
               </label>
               <input
-                type="file"
-                id="image"
-                accept="image/*"
-                className="hidden"
-                onChange={handleChange}
+                type="file" name="file" accept=".jpg, .jpeg, .png" required="required" onChange={handleChange}
               />
             </div>
           </div>
@@ -78,11 +72,11 @@ function CropDiagnosis() {
           name="problem"
           id="problem"
           rows={5}
-          value={prediction}
           className="w-full border border-gray-400 outline-none p-4"
           placeholder="Upload the image and click the predict button to get the result..."
           readOnly
-        ></textarea>
+          value={predictionText} // Use the prediction text state variable here
+        />
       </div>
     </div>
   );
