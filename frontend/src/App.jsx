@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import React from "react";
 import { Home, Login, Signup,CropDiagnosis,SoilDiagnosis } from "./pages";
 import {ToastContainer } from 'react-toastify'
->>>>>>> 551f560708515e5e7cd41aeb52676d4007d54f2c
 import Layout from "./components/Layout/Layout";
 
 
