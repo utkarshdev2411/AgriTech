@@ -1,13 +1,15 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import React from "react";
-import { Home, Login, Signup,CropDiagnosis,SoilDiagnosis } from "./pages";
-import {ToastContainer } from 'react-toastify'
+import React, { useState, useEffect } from "react";
+import { Home, Login, Signup, CropDiagnosis, SoilDiagnosis,UserProfile } from "./pages";
+import { ToastContainer } from 'react-toastify'
 import Layout from "./components/Layout/Layout";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getCurrentUserAPI } from "./store/services/userAction";
+import { Navigate } from "react-router-dom";
+
 
 function App() {
-  const [user, setUser] = useState(null)
+  const data = useSelector(state => state.user.userInfo)
   const dispatch = useDispatch()
 
   useEffect(() => {
@@ -16,13 +18,13 @@ function App() {
 
   return (
     <>
-    <ToastContainer />
+      <ToastContainer />
       <BrowserRouter>
         <Routes>
           <Route path='/' element={<Layout />}>
             <Route path="/" element={<Home />} />
-            {/* <Route path='/profile' element={<ProtectedUser><UserProfile /></ProtectedUser>} /> */}
-            <Route path='/login' element={<ProtectedRouting><Login /></ProtectedRouting>} />
+            <Route path='/profile' element={<ProtectedUser user={data} ><UserProfile /></ProtectedUser>} />
+            <Route path='/login' element={<ProtectedRouting user={data} ><Login /></ProtectedRouting>} />
             <Route path='/register' element={<ProtectedRouting><Signup /></ProtectedRouting>} />
             <Route path="/cropdiagnosis" element={<ProtectedUser><CropDiagnosis /></ProtectedUser>} />
             <Route path="/soildiagnosis" element={<ProtectedUser><SoilDiagnosis /></ProtectedUser>} />
@@ -35,18 +37,14 @@ function App() {
 
 
 
-const ProtectedRouting = ({ children }) => {
-  // const user = JSON.parse(localStorage.getItem('user'))
-  
+const ProtectedRouting = ({ user,children }) => {
   if (!user) { return children; }
   else { return <Navigate to={'/'} />; }
 }
 
 
 // 
-const ProtectedUser = ({ children }) => {
-  // const user = JSON.parse(localStorage.getItem('user'));
-  // const user=false;
+const ProtectedUser = ({user, children }) => {
   if (user) { return children; }
   else { return <Navigate to={'/login'} />; }
 }

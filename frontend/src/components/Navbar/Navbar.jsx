@@ -1,8 +1,10 @@
 import React from 'react'
+import { useSelector } from 'react-redux'
 import { Link, NavLink } from 'react-router-dom'
 
 const Navbar = () => {
-  const user = false;
+  
+  const user = useSelector(state => state.user.userInfo)
   return (
     <div className='w-full bg-slate-50 flex py-6 items-center justify-around'>
       <Link to={'/'} className='text-xl font-bold tracking-wider '>
