@@ -153,3 +153,4 @@ response=model.generate_content([user_question,text,prompt])
 
 query_answer=response.text
 print(response.text) 
+
