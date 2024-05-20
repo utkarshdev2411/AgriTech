@@ -15,6 +15,10 @@ const uploads = multer({ dest: 'uploads/' });
 
 const DiagnosisRouter=express.Router();
 
+
+
+
+
 DiagnosisRouter.post('/soil',uploads.single("report"),(req,res)=>{
 
     console.log(req.file)
@@ -41,5 +45,6 @@ DiagnosisRouter.post('/soil',uploads.single("report"),(req,res)=>{
 
     res.sendStatus(200);
 })
+
 
 export default DiagnosisRouter;
