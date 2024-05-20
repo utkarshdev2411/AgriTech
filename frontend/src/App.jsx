@@ -25,6 +25,7 @@ function App() {
         <Routes>
           <Route path='/' element={<Layout />}>
             <Route path="/" element={<Home />} />
+
             <Route path='/profile' element={<AuthLayout authentication={true}><UserProfile /></AuthLayout>} />
             <Route path='/comment' element={<AuthLayout authentication={true}><Comment /></AuthLayout>} />
             <Route path='/editprofile' element={<AuthLayout authentication={true}><EditProfile /></AuthLayout>} />
@@ -32,7 +33,9 @@ function App() {
             <Route path='/register' element={<AuthLayout authentication={false}><Signup /></AuthLayout>} />
             <Route path="/cropdiagnosis" element={<AuthLayout authentication={true}><CropDiagnosis /></AuthLayout>} />
             <Route path="/soildiagnosis" element={<AuthLayout authentication={true}><SoilDiagnosis /></AuthLayout>} />
+
           </Route>
+       
         </Routes>
       </BrowserRouter>
     </>
