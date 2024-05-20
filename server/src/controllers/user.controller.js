@@ -47,7 +47,7 @@ const userRegister = asyncHandler(async (req, res) => {
   await newUser.save();
 
   const token = await newUser.generateAccessToken();
-  console.log({ token, newUser })
+  // console.log({ token, newUser })
 
   const createdUser = await User.findById(newUser._id).select("-password");
 

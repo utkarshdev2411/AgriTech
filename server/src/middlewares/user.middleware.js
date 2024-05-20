@@ -18,7 +18,6 @@ export const jwtVerify = asyncHandler(async (req, _, next) => {
     const user = await User.findOne({ email: decodeToken?.email }).select(
       "-password"
     );
-console.log(decodeToken)
     req.user = user;
     next();
   } catch (error) {
