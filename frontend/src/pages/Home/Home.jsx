@@ -21,22 +21,22 @@ const Home = () => {
 
       {/* features section */}
       <div className=' bg-white flex gap-10 items-center justify-center flex-wrap py-28 px-20'>
-        <Link className='px-17 bg-[#f7f7f7] px-10 py-5 rounded-md flex flex-col items-center justify-center'>
+        <Link to={'/cropdiagnosis'} className='px-17 bg-[#f7f7f7] px-10 py-5 rounded-md flex flex-col items-center justify-center'>
           <div className=" border overflow-hidden h-24 w-24 rounded-full  bg-slate-200 flex justify-center items-center "><MdOutlineAddAPhoto className='text-5xl' /></div>
           <h1 className='text-xl text-slate-800 font-semibold tracking-wide'>Crop Diagnosis</h1>
           <p className='text-center mt-3 text-sm text-slate-600 font-medium tracking-wide w-52'>Click photo and get your crop disease result in real time.  </p>
         </Link>
-        <Link className='px-17 bg-[#f7f7f7] px-10 py-5 rounded-md flex flex-col items-center justify-center'>
+        <Link to={'/soildiagnosis'} className='px-17 bg-[#f7f7f7] px-10 py-5 rounded-md flex flex-col items-center justify-center'>
           <div className=" border overflow-hidden h-24 w-24 rounded-full  bg-slate-200 flex justify-center items-center "><FaHandsHoldingCircle className='text-5xl' /></div>
           <h1 className='text-xl text-slate-800 font-semibold tracking-wide'>Soil Diagnosis</h1>
           <p className='text-center mt-3 text-sm text-slate-600 font-medium tracking-wide w-52'>Upload Soil report pdf and some details and get real time data about your soil condition.  </p>
         </Link>
-        <Link className='px-17 bg-[#f7f7f7] px-10 py-5 rounded-md flex flex-col items-center justify-center'>
+        <Link to={'comment'} className='px-17 bg-[#f7f7f7] px-10 py-5 rounded-md flex flex-col items-center justify-center'>
           <div className=" border overflow-hidden h-24 w-24 rounded-full  bg-slate-200 flex justify-center items-center "><MdPeopleAlt className='text-5xl' /></div>
           <h1 className='text-xl text-slate-800 font-semibold tracking-wide'>Community</h1>
           <p className='text-center mt-3 text-sm text-slate-600 font-medium tracking-wide w-52'>Connect with the vast commnunity of farmer to share idea and knowldege.   </p>
         </Link>
-        <Link className='px-17 bg-[#f7f7f7] px-10 py-5 rounded-md flex flex-col items-center justify-center'>
+        <Link to={'/soildiagnosis'} className='px-17 bg-[#f7f7f7] px-10 py-5 rounded-md flex flex-col items-center justify-center'>
           <div className=" border overflow-hidden h-24 w-24 rounded-full  bg-slate-200 flex justify-center items-center "><PiPottedPlantBold className='text-5xl' /></div>
           <h1 className='text-xl text-slate-800 font-semibold tracking-wide'>Crop preference</h1>
           <p className='text-center mt-3 text-sm text-slate-600 font-medium tracking-wide w-52'> Predict the most preferred crop as per your data and soil report.  </p>

@@ -11,12 +11,18 @@ const SoilDiagnosis = () => {
 
 
     const onSubmit = async (data) => {
+        console.log(data)
         
+        const irrigation = selectedOption === 'custom' ? data.customIrrigation : data.irrigation;
+        
+        // Create a FormData object to hold the form data
         const formData = new FormData();
-
-        formData.append("content", data)
+        
+        formData.append('rainfall', data.rainfall);
+        formData.append('temp', data.temp);
+        formData.append('area', data.area);
+        formData.append('irrigation', irrigation);
         formData.append("report", report)
-        console.log(formData)
 
         await axios.post('http://localhost:8000/diagnosis/soil', formData, {
             headers: {

@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import React, { useState, useEffect } from "react";
-import { Home, Login, Signup, CropDiagnosis, SoilDiagnosis,UserProfile } from "./pages";
+import { Home, Login, Signup, CropDiagnosis, SoilDiagnosis,UserProfile,Comment } from "./pages";
 import { ToastContainer } from 'react-toastify'
 import Layout from "./components/Layout/Layout";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,8 +10,9 @@ import EditProfile from "./pages/EditProfile/EditProfile";
 import AuthLayout from "./components/AuthLayout";
 
 
+
+
 function App() {
-  const data = useSelector(state => state.user.userInfo)
   const dispatch = useDispatch()
 
   useEffect(() => {
