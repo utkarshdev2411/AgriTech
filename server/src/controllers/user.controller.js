@@ -47,7 +47,7 @@ const userRegister = asyncHandler(async (req, res) => {
   await newUser.save();
 
   const token = await newUser.generateAccessToken();
-  console.log({ token, newUser })
+  // console.log({ token, newUser })
 
   const createdUser = await User.findById(newUser._id).select("-password");
 
@@ -255,8 +255,6 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   const oldAvatarURL = req.user?.avatar;
 
   const avatar = await uploadOnCloudinary(avatarLocalPath);
-
-  console.log(avatar)
 
   if (!avatar.secure_url) {
     throw new ApiError(

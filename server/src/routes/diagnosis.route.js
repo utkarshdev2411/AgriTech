@@ -21,12 +21,14 @@ const DiagnosisRouter=express.Router();
 
 DiagnosisRouter.post('/soil',uploads.single("report"),(req,res)=>{
 
+
     console.log(req.file)
     console.log(req.file.filename)
     console.log({
         report:req.file.destination,
         data:req.body
     })
+
 
     const formData = req.body;
     const report = req.file;
@@ -37,6 +39,7 @@ DiagnosisRouter.post('/soil',uploads.single("report"),(req,res)=>{
         fs.mkdirSync(uploadsDir);
     }
 
+
     // Save form data to a JSON file
     fs.writeFileSync(path.join(uploadsDir, 'formData.json'), JSON.stringify(formData));
 
@@ -45,6 +48,7 @@ DiagnosisRouter.post('/soil',uploads.single("report"),(req,res)=>{
 
     res.sendStatus(200);
 })
+
 
 
 export default DiagnosisRouter;
