@@ -6,6 +6,8 @@ import Layout from "./components/Layout/Layout";
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentUserAPI } from "./store/services/userAction";
 import { Navigate } from "react-router-dom";
+import EditProfile from "./pages/EditProfile/EditProfile";
+import AuthLayout from "./components/AuthLayout";
 
 
 function App() {
@@ -14,7 +16,7 @@ function App() {
 
   useEffect(() => {
     dispatch(getCurrentUserAPI())
-  }, []);
+  }, [dispatch]);
 
   return (
     <>
@@ -23,30 +25,17 @@ function App() {
         <Routes>
           <Route path='/' element={<Layout />}>
             <Route path="/" element={<Home />} />
-            <Route path='/profile' element={<ProtectedUser user={data} ><UserProfile /></ProtectedUser>} />
-            <Route path='/login' element={<ProtectedRouting user={data} ><Login /></ProtectedRouting>} />
-            <Route path='/register' element={<ProtectedRouting><Signup /></ProtectedRouting>} />
-            <Route path="/cropdiagnosis" element={<ProtectedUser><CropDiagnosis /></ProtectedUser>} />
-            <Route path="/soildiagnosis" element={<ProtectedUser><SoilDiagnosis /></ProtectedUser>} />
+            <Route path='/profile' element={<AuthLayout authentication={true}><UserProfile /></AuthLayout>} />
+            <Route path='/editprofile' element={<AuthLayout authentication={true}><EditProfile /></AuthLayout>} />
+            <Route path='/login' element={<AuthLayout authentication={false}><Login /></AuthLayout>} />
+            <Route path='/register' element={<AuthLayout authentication={false}><Signup /></AuthLayout>} />
+            <Route path="/cropdiagnosis" element={<CropDiagnosis />} />
+            <Route path="/soildiagnosis" element={<SoilDiagnosis />} />
           </Route>
         </Routes>
       </BrowserRouter>
     </>
   );
-}
-
-
-
-const ProtectedRouting = ({ user,children }) => {
-  if (!user) { return children; }
-  else { return <Navigate to={'/'} />; }
-}
-
-
-// 
-const ProtectedUser = ({user, children }) => {
-  if (user) { return children; }
-  else { return <Navigate to={'/login'} />; }
 }
 
 export default App;
