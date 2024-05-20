@@ -36,7 +36,7 @@ const Login = () => {
           <form onSubmit={handleSubmit(onSubmit)} className='flex max-w-fit bg-slate-200   flex-col px-16 py-10'>
             <h1 className='text-xl md:text-3xl text-center font-bold tracking-wider mb-4'>WELCOME BACK</h1>
             <p className=' text-nowrap text-xs md:text-md font-semibold text-gray-600 tracking-tight mb-7'> Please enter your contact details to connect</p>
-            <label className='text-md mb-2 font-semibold tracking-wide' htmlFor="identifier">Email or Username</label>
+            <label className='text-md mb-2 font-semibold tracking-wide' htmlFor="identifier">Email</label>
             <input
               {...register("email", {
                 required: "Email is required"

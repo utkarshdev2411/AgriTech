@@ -11,7 +11,7 @@ function AuthLayout({ children, authentication = true }) {
     if (authentication && !authStatus) {
       navigate("/login");
     } else if (!authentication && authStatus) {
-      navigate("/profile");
+      navigate("/");
     }
     setLoader(false);
   }, [navigate, authentication, authStatus]);

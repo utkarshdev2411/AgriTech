@@ -21,7 +21,7 @@ function CropDiagnosis() {
     const formData = new FormData();
     formData.append('file', e.target.file.files[0]);
 
-    const response = await fetch('http://localhost:5123/predict', {
+    const response = await fetch('http://localhost:5124/predict', {
       method: 'POST',
       body: formData
     });
