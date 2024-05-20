@@ -6,7 +6,6 @@ function Profile() {
   return (
     <div className="max-w-2xl m-auto">
       
-      <Logout/>
       <ProfileComponent/>
     </div>
   );

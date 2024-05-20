@@ -10,6 +10,7 @@ const Comment = () => {
   const dispatch = useDispatch();
   const [createPosts, setCreatePosts] = useState(false)
   const posts = useSelector(state => state.post.posts)
+  console.log(posts)
   const user = useSelector(state => state.user.userInfo)
 
   const onSubmit = async (data) => {
@@ -42,13 +43,13 @@ const Comment = () => {
 
         <button onClick={() => (setCreatePosts(prev => !prev))} className='mb-3 px-4 py-2 bg-slate-800 font-semibold text-md absolute top-0 right-[20%] text-white rounded-md'>{createPosts ? "X" : "+"}</button>
 
-        {posts.posts && posts.posts.map((post) => (
+        {posts && posts.map((post) => (
           <div key={post._id} className='mb-8 border-2 border-slate-300 max-w-lg px-10 pt-6 pb-3'>
             <div className='flex justify-start items-center gap-4 mb-4'>
-              <div className='w-9  h-9 overflow-hidden object-center' ><img src={posts.avatar} alt="" /></div>
+              <div className='w-9  h-9 overflow-hidden object-center' ><img src={post.user && post.user.avatar} alt="profile" /></div>
               <div>
-                <h1 className='text-lg text-slate-700 font-bold tracking-wide'>{posts.username}</h1>
-                <h3 className='text-md text-blue-600 '>{posts ? posts.email : "email@email.com"}</h3>
+                <h1 className='text-lg text-slate-700 font-bold tracking-wide'>{post.user && post.user.username}</h1>
+                <h3 className='text-md text-blue-600 '>{post.user ? post.user.email : "email@email.com"}</h3>
               </div>
             </div>
             <p className='trucate text-sm font-medium text-slate-500'>{post.content}</p>

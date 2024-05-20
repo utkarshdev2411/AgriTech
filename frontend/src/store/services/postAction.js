@@ -5,10 +5,10 @@ const getPosts = createAsyncThunk(
   "post/getposts",
   async (_, { rejectWithValue }) => {
     try {
-        const user = await axios.get('http://localhost:8000/post', {
+        const post = await axios.get('http://localhost:8000/post', {
             withCredentials: true
           })
-      return user.data;
+      return post.data;
     } catch (error) {
       return rejectWithValue(error.message);
     }

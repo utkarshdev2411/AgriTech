@@ -3,7 +3,7 @@ import { getPosts, createPost } from '../services/postAction'
 
 const initialState = {
     status: false,
-    posts:{},
+    posts:[],
     loading: false,
 }
 

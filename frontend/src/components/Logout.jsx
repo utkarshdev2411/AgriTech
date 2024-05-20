@@ -13,7 +13,7 @@ function Logout() {
     <div className='flex justify-end mr-4'>
         <button
             type="submit"
-            className="px-4 rounded-md py-2 bg-red-600 text-white font-semibold "
+            className="px-4 rounded-md py-2 bg-slate-800 text-white font-semibold "
             onClick={handleLogout}
             >
             Logout 

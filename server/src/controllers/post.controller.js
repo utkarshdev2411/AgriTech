@@ -24,9 +24,9 @@ export const getPosts = async (req, res) => {
 
     // console.log(req.user)
     
-    const user=await User.findOne({email:req.user.email}).populate("posts")
+    const post=await postModel.find({}).populate("user")
     
-    console.log(user)
-    res.json(user)
+    console.log(post)
+    res.json(post)
 
 }

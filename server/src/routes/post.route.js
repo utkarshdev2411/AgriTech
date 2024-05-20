@@ -7,7 +7,7 @@ const router=express.Router();
 
 
 const routerPost= router
-.get('/',jwtVerify,getPosts)
+.get('/',getPosts)
 .post('/create',createPost)
 
 

@@ -5,7 +5,6 @@ import { ToastContainer } from 'react-toastify'
 import Layout from "./components/Layout/Layout";
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentUserAPI } from "./store/services/userAction";
-import { Navigate } from "react-router-dom";
 import EditProfile from "./pages/EditProfile/EditProfile";
 import AuthLayout from "./components/AuthLayout";
 
@@ -31,8 +30,8 @@ function App() {
             <Route path='/editprofile' element={<AuthLayout authentication={true}><EditProfile /></AuthLayout>} />
             <Route path='/login' element={<AuthLayout authentication={false}><Login /></AuthLayout>} />
             <Route path='/register' element={<AuthLayout authentication={false}><Signup /></AuthLayout>} />
-            <Route path="/cropdiagnosis" element={<CropDiagnosis />} />
-            <Route path="/soildiagnosis" element={<SoilDiagnosis />} />
+            <Route path="/cropdiagnosis" element={<AuthLayout authentication={true}><CropDiagnosis /></AuthLayout>} />
+            <Route path="/soildiagnosis" element={<AuthLayout authentication={true}><SoilDiagnosis /></AuthLayout>} />
           </Route>
         </Routes>
       </BrowserRouter>
