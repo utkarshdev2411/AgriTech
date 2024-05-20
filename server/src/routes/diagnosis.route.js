@@ -7,13 +7,10 @@ const DiagnosisRouter=express.Router();
 
 DiagnosisRouter.post('/soil',upload.single("report"),(req,res)=>{
 
-    console.log(req.file)
-    console.log(req.file.filename)
+    console.log(req.file);
+    console.log(req.body);
     res.send("successfully sent")
 
 })
-
-
-
 
 export default DiagnosisRouter;

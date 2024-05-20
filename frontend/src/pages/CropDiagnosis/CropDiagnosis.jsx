@@ -32,7 +32,7 @@ function CropDiagnosis() {
 
   return (
     <div className="sm:w-[80%] max-w-2xl mx-4 sm:m-auto">
-      <form onSubmit={handleSubmit} enctype="multipart/form-data">
+      <form onSubmit={handleSubmit} encType="multipart/form-data">
         <h1 className="text-2xl font-bold">Username</h1>
         <h2 className="text-xl my-2 font-semibold">
           Upload image to get the best result:
