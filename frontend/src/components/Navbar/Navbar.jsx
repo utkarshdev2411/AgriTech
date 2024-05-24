@@ -33,7 +33,7 @@ const Navbar = () => {
           return `text-md tracking-wider hover:text-blue-500 font-medium ${isActive ? "text-blue-700" : ""}`
         }}>Community</NavLink>
         {status && <Link to={'/profile'} className='h-10 border-[1px] border-slate-400 w-10 rounded-full ' >
-            <img src={user.avatar} alt="profile" />
+            <img src={user && user.avatar} alt="profile" />
             </Link>}
         {!status ? <Link to={'/login'} className='px-4 py-2 bg-slate-800 hover:bg-slate-600 text-md text-white rounded-md font-bold' >Login</Link>:<Logout/>}
 

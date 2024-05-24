@@ -4,6 +4,7 @@ import React, { useState } from "react";
 function CropDiagnosis() {
   const [imagePreview, setImagePreview] = useState(null);
   const [predictionText, setPredictionText] = useState(''); // Add this line
+  const [loading,setLoading]=useState(false)
 
   const handleChange = (e) => {
     const file = e.target.files[0];
@@ -18,9 +19,9 @@ function CropDiagnosis() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true) // changed loading
     const formData = new FormData();
     formData.append('file', e.target.file.files[0]);
-
     const response = await fetch('http://localhost:5124/predict', {
       method: 'POST',
       body: formData
@@ -28,6 +29,7 @@ function CropDiagnosis() {
 
     const data = await response.json();
     setPredictionText(data.prediction_text); // Update the prediction text
+    setLoading(false) // changed loading
   };
 
   return (
@@ -55,7 +57,7 @@ function CropDiagnosis() {
                
               </label>
               <input
-                type="file" name="file" accept=".jpg, .jpeg, .png" required="required" onChange={handleChange}
+               className="hidden" type="file" id="image" name="file" accept=".jpg, .jpeg, .png" required="required" onChange={handleChange}
               />
             </div>
           </div>
@@ -67,8 +69,10 @@ function CropDiagnosis() {
           Predict
         </button>
       </form>
-      <div>
-        <h2 className="text-xl my-2 font-semibold">Result:</h2>
+      <div className="flex flex-col justify-center items-center">
+        <h2 className="text-xl my-2  font-semibold">Result:</h2>
+        {loading?
+      <img  className=" border border-gray-400 p-10" src={"https://media2.giphy.com/media/3oEjI6SIIHBdRxXI40/200w.gif?cid=6c09b9520qwkh1x7cxjjd5lr3xt43g99jzpye40tzein23u4&ep=v1_gifs_search&rid=200w.gif&ct=g" } alt="" />:
         <textarea
           name="problem"
           id="problem"
@@ -77,7 +81,7 @@ function CropDiagnosis() {
           placeholder="Upload the image and click the predict button to get the result..."
           readOnly
           value={predictionText} // Use the prediction text state variable here
-        />
+        />}
       </div>
     </div>
   );

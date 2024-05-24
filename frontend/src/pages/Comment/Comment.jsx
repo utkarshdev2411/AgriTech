@@ -31,7 +31,7 @@ const Comment = () => {
   };
   useEffect(() => {
     dispatch(getPosts());
-  }, [dispatch])
+  }, [onSubmit])
 
 
 

@@ -9,10 +9,11 @@ const SoilDiagnosis = () => {
     const [isCustom, setIsCustom] = useState(false);
     const [report, setReport] = useState();
     const selectedOption = watch('irrigation', '');
+    const [loading,setLoading]=useState(false)
 
     const [isReportVisible, setIsReportVisible] = useState(false);
     const onSubmit = async (data) => {
-        
+        setLoading(true) // changed loading
         const irrigation = selectedOption === 'custom' ? data.customIrrigation : data.irrigation;
         
         // Create a FormData object to hold the form data
@@ -43,6 +44,7 @@ const SoilDiagnosis = () => {
         }
     });
     setReport(res.data);
+    setLoading(false);
 
     reset(); 
     console.log(report)
@@ -167,7 +169,8 @@ const SoilDiagnosis = () => {
         <div style={{ scrollbarWidth: "none" }} className='relative h-[60vh] overflow-y-auto  w-full lg:w-[30vw] rounded-md bg-slate-50 border-[2px] border-slate-400 '>
           <h1 className='text-center text-xl sticky flex items-center justify-center top-0 h-10 bg-slate-800 bg-opacity-85 text-white mb-3 left-1/2 t font-semibold tracking-wide'>Result Shown here</h1>
           <div className='px-8 mb-4'>
-            <p className='text-sm text-gray-800'>{report.answer}</p>
+          {loading ? <img className="m-auto " src={"https://media2.giphy.com/media/3oEjI6SIIHBdRxXI40/200w.gif?cid=6c09b9520qwkh1x7cxjjd5lr3xt43g99jzpye40tzein23u4&ep=v1_gifs_search&rid=200w.gif&ct=g"} alt="" /> :
+            <p className='text-sm text-gray-800'>{report.answer}</p>}
           </div>
         </div>
       )}
