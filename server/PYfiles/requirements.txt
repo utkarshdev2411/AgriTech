@@ -11,3 +11,5 @@ python-dotenv
 faiss-cpu
 PyPDF2
 pdf2image
+flask
+flask-cors
