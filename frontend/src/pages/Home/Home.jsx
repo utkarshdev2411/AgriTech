@@ -128,7 +128,7 @@ const Home = () => {
         <div className="absolute inset-0 bg-dot-pattern opacity-5"></div>
         
         {/* Decorative elements */}
-        <div className="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-green-500 via-green-400 to-green-500 opacity-30"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 via-green-400 to-green-500 opacity-30"></div>
         
         <div className="max-w-7xl mx-auto relative">
           <div className="text-center mb-16">
