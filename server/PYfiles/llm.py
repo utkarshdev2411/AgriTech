@@ -28,7 +28,6 @@ import pdf2image
 
 
 from flask import Flask, request, jsonify
-from flask import jsonify
 from flask_cors import CORS
 
 
@@ -145,7 +144,7 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 
 flask_app = Flask(__name__)
-CORS(flask_app)
+CORS(flask_app, resources={r"/*": {"origins": ["http://localhost:5173", "*"]}})
 
 
 
@@ -192,7 +191,7 @@ def process_pdf_and_store_vectors():
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
     prompt="extract the numerical data and give the value along with its relations with other data and reelavent text.Give the response in paragraph format in upto 100 words and  in a proper structure.   If you are not able to extract the data, just say, 'I am not able to extract the data'"
 
-    model=genai.GenerativeModel('gemini-pro-vision')
+    model=genai.GenerativeModel('gemini-2.0-flash')
     response=model.generate_content([pdf_parts[0], prompt])
 
     text=response.text
@@ -209,11 +208,11 @@ def process_pdf_and_store_vectors():
 def process_and_store_vectors(user_question):
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
 
-    new_db = FAISS.load_local("faiss_index1", embeddings)  # LOADING THE FAISS INDEX of JSON
+    new_db = FAISS.load_local("faiss_index1", embeddings,allow_dangerous_deserialization=True)  # LOADING THE FAISS INDEX of JSON
     docs = new_db.similarity_search(user_question)
     text1 = docs[0].page_content
 
-    new_db = FAISS.load_local("faiss_index2", embeddings)  # LOADING THE FAISS INDEX of PDF
+    new_db = FAISS.load_local("faiss_index2", embeddings,allow_dangerous_deserialization=True)  # LOADING THE FAISS INDEX of PDF
     docs = new_db.similarity_search(user_question)
     text2 = docs[0].page_content
 
@@ -229,34 +228,48 @@ def process_and_store_vectors(user_question):
     vector_store.save_local("faiss_index3")
 
 @flask_app.route('/report', methods=['POST'])
-
 def report():
-    # data = request.get_json()  # Get data from POST request
-    # user_question = data.get('user_question')  # Extract user_question from the data
+    try:
+        # Print request data for debugging
+        print("Received form data:", request.form)
+        if request.files:
+            print("Received files:", request.files)
+            
+        # Ensure directories exist for storing files
+        os.makedirs("../src/routes/uploads", exist_ok=True)
+        
+        # Process the form data
+        process_json_and_store_vectors()
+        
+        # Only process PDF if it exists
+        if 'report' in request.files:
+            process_pdf_and_store_vectors()
+            
+        process_and_store_vectors("Give summary of this data")
 
-    process_json_and_store_vectors()
-    process_pdf_and_store_vectors()
-    process_and_store_vectors("Give summary of this data")
+        embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
 
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+        user_question = "Give summary of this data"
+        new_db = FAISS.load_local("faiss_index3", embeddings, allow_dangerous_deserialization=True)
+        docs = new_db.similarity_search(user_question)
+        text = docs[0].page_content
+        print(text)
 
-    user_question = "Give summary of this data"
-    new_db = FAISS.load_local("faiss_index3", embeddings)  # LOADING THE FAISS INDEX of Combined JSON and PDF
-    docs = new_db.similarity_search(user_question)
-    text = docs[0].page_content
-    print(text)
+        prompt = "You are agriculturist and research expert whose aim is to help the farmers to enhance their productivity by helping them in modernization and sharing scientific aspects. if you are not able to get any contenxt from the data or not recieved any informatin, then generate your own behalf which reseblence to the query and help the farmers as much as possible. use your own nlp for the purpose. Also avoid any unnecessary information. Give the response in paragraph format in upto one hundred words in a proper structure." + " " + text + "give summary of all the data which includes the rainfal etc and the chemical compitions itself in upto 200 words and detailed format"
 
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+        model = genai.GenerativeModel(model_name="models/gemini-2.0-flash")
+        response = model.generate_content(prompt)
 
-    prompt = "You are agriculturist and research expert whose aim is to help the farmers to enhance their productivity by helping them in modernization and sharing scientific aspects.  if you are not able to get any contenxt from the data or not recieved any informatin, then generate your own behalf which reseblence to the query and help the farmers as much as possible. use your own nlp for the purpose. Also avoid any unnecessary information. Give the response in paragraph format in upto one hundred words in a proper structure." + " " + text+"give summary of all the data which includes the rainfal etc and the chemical compitions itself in upto 200 words and detailed format"
-
-    model = genai.GenerativeModel(model_name="models/gemini-1.5-pro-latest")
-    response = model.generate_content(prompt)
-
-    query_answer = response.text
-    # print(query_answer)
-
-    return jsonify({'answer':query_answer})  # Return the result as JSON
+        query_answer = response.text
+        return jsonify({'answer': query_answer})
+        
+    except Exception as e:
+        # Log the error
+        print(f"Error in /report route: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        # Return error response
+        return jsonify({'answer': f'Error analyzing soil data: {str(e)}'}), 500
 
 def user_chat():
     data = request.get_json()  # Get data from POST request
@@ -264,7 +277,7 @@ def user_chat():
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
 
    
-    new_db = FAISS.load_local("faiss_index3", embeddings)  # LOADING THE FAISS INDEX of Combined JSON and PDF
+    new_db = FAISS.load_local("faiss_index3", embeddings, allow_dangerous_deserialization=True)  # LOADING THE FAISS INDEX of Combined JSON and PDF
     docs = new_db.similarity_search(user_input)
     text = docs[0].page_content
     # print(text)
