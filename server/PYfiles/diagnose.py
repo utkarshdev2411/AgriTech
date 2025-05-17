@@ -1,109 +1,116 @@
 import os
-import requests
-import time
-import json
+import uuid
+import logging
+from dotenv import load_dotenv
 from flask import Flask, request, jsonify
-from werkzeug.utils import secure_filename
 from flask_cors import CORS
+from werkzeug.utils import secure_filename
+from huggingface_hub import InferenceClient
 
-# Initialize the Flask app
-flask_app = Flask(__name__)
-CORS(flask_app, resources={r"/*": {"origins": ["http://localhost:5173", "*"]}})
+# --- Configuration & Initialization ---
+load_dotenv()
+HF_API_KEY = os.getenv("HF_API_KEY", "").strip()
+if not HF_API_KEY:
+    raise RuntimeError("HF_API_KEY not set in environment")
 
-# Configure the upload folder
-UPLOAD_FOLDER = 'uploads'
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-flask_app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-Hf_api_key=os.getenv("HF_API_KEY")
-# Hugging Face API configuration
-API_URL = "https://api-inference.huggingface.co/models/linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification"
-HEADERS = {"Authorization": "Bearer " + Hf_api_key}
+# High-accuracy plant disease model (EfficientNetB4 fine-tuned on PlantVillage)
+MODEL_ID = "liriope/PlantDiseaseDetection"
 
-# Function to query the Hugging Face API with retry mechanism
-def query(filename, max_retries=5, retry_delay=2):
-    """
-    Query the Hugging Face API with retries for model loading
-    
-    Args:
-        filename: Path to the image file
-        max_retries: Maximum number of retry attempts
-        retry_delay: Delay between retries in seconds
-        
-    Returns:
-        JSON response or error message
-    """
-    with open(filename, "rb") as f:
-        data = f.read()
-    
-    for attempt in range(max_retries):
+# Instantiate per HF docs: provider + api_key
+client = InferenceClient(
+    provider="hf-inference",       # routes through Hugging Face’s Inference API :contentReference[oaicite:0]{index=0}
+    api_key=HF_API_KEY             # your user access token
+)
+
+BASE_DIR = os.path.dirname(__file__)
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "..", "uploads")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
+MAX_CONTENT_LENGTH = 5 * 1024 * 1024  # 5 MB
+
+def create_app():
+    app = Flask(__name__)
+    CORS(app)
+    app.config.update(
+        UPLOAD_FOLDER=UPLOAD_FOLDER,
+        MAX_CONTENT_LENGTH=MAX_CONTENT_LENGTH
+    )
+
+    # Structured logging
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
+    app.logger.setLevel(logging.INFO)
+    app.logger.addHandler(handler)
+
+    @app.route("/health", methods=["GET"])
+    def health():
+        return jsonify(status="ok"), 200
+
+    def allowed_file(filename: str) -> bool:
+        return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+    def query_hf(img_bytes: bytes) -> dict:
+        """
+        Calls image_classification per the InferenceClient signature:
+        image_classification( image: Union[bytes, str, Path], model: Optional[str], top_k: Optional[int] )
+        :contentReference[oaicite:1]{index=1}
+        """
         try:
-            response = requests.post(API_URL, headers=HEADERS, data=data)
-            
-            # Check if we got a successful response
-            if response.status_code == 200:
-                return response.json()
-            
-            # Check for model loading message
-            error_text = response.text
-            print(f"Attempt {attempt+1}: Status code: {response.status_code}, Response: {error_text}")
-            
-            if "loading" in error_text.lower() or "currently loading" in error_text.lower():
-                print(f"Model is loading, retrying in {retry_delay} seconds...")
-                time.sleep(retry_delay)
-                continue
-                
-            # If it's another error, return it as a dictionary
-            return {"error": error_text}
-            
-        except requests.exceptions.RequestException as e:
-            print(f"Request error: {e}")
-            return {"error": f"API request failed: {str(e)}"}
-        except json.JSONDecodeError as e:
-            print(f"JSON decode error: {e}")
-            print(f"Raw response: {response.text}")
-            
-            # If it's the first attempt, try again as the model might be loading
-            if attempt < max_retries - 1:
-                print(f"Retrying in {retry_delay} seconds...")
-                time.sleep(retry_delay)
-            else:
-                return {"error": "Invalid response format from API"}
-    
-    return {"error": "Maximum retries reached"}
+            preds = client.image_classification(
+                img_bytes,           # raw bytes as first positional arg
+                model=MODEL_ID,      # explicit model on each call
+                top_k=1              # just the top prediction
+            )
+            return {"data": preds}
+        except Exception as e:
+            app.logger.error("HF inference error", exc_info=True)
+            return {"error": str(e)}
 
-@flask_app.route("/predict", methods=["POST"])
-def predict():
-    if 'file' not in request.files:
-        return jsonify({'prediction_text': 'No image selected'})
+    @app.route("/predict", methods=["POST"])
+    def predict():
+        f = request.files.get("file")
+        if not f or f.filename == "":
+            return jsonify(error="No file provided"), 400
+        if not allowed_file(f.filename):
+            return jsonify(error="Unsupported file type"), 415
 
-    file = request.files['file']
+        filename = secure_filename(f.filename)
+        unique_name = f"{uuid.uuid4().hex}_{filename}"
+        file_path = os.path.join(app.config["UPLOAD_FOLDER"], unique_name)
 
-    if file.filename == '':
-        return jsonify({'prediction_text': 'No image selected'})
+        try:
+            f.save(file_path)
+            app.logger.info(f"Saved upload to {file_path}")
 
-    if file:
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(flask_app.config['UPLOAD_FOLDER'], filename)
-        file.save(file_path)
+            # Always read bytes, never pass the path string directly
+            with open(file_path, "rb") as img_f:
+                img_bytes = img_f.read()
 
-        # Make prediction
-        output = query(file_path)
-        
-        # Check if we have a valid prediction
-        if isinstance(output, list) and len(output) > 0 and 'label' in output[0]:
-            predicted_label = output[0]['label'] + '\n' + 'predicted score is: ' + str(output[0]['score'])
-            result_text = f"Prediction: {predicted_label}"
-        elif 'error' in output:
-            result_text = f"API Error: {output['error']}"
-        else:
-            result_text = "Failed to get prediction from API"
+            result = query_hf(img_bytes)
+            if "error" in result:
+                return jsonify(error=result["error"]), 502
 
-        return jsonify({"prediction_text": result_text})
+            data = result["data"]
+            if isinstance(data, list) and data:
+                top = data[0]
+                label = top.get("label")
+                score = top.get("score")
+                if label is not None and score is not None:
+                    return jsonify(label=label, score=score), 200
+
+            return jsonify(error="Unexpected response format"), 502
+
+        finally:
+            try:
+                os.remove(file_path)
+                app.logger.debug(f"Removed temp file {file_path}")
+            except OSError:
+                pass
+
+    return app
 
 if __name__ == "__main__":
-    print('*************************************************************************************************')
-    print('Plant Disease Diagnosis API server running on port 5124')
-    print('*************************************************************************************************')
-    flask_app.run(debug=True, host='0.0.0.0', port=5124)
-
+    app = create_app()
+    app.logger.info("Starting Plant Disease API on port 5124")
+    app.run(host="0.0.0.0", port=5124, debug=False)
