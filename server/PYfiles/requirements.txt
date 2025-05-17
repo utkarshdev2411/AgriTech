@@ -13,3 +13,4 @@ PyPDF2
 pdf2image
 flask
 flask-cors
+huggingface-hub
