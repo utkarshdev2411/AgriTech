@@ -1,14 +1,23 @@
-import express from 'express'
-import { createPost, getPosts } from '../controllers/post.controller.js';
+import express from 'express';
+import { 
+  addComment,
+  createPost, 
+  getComments, 
+  getPostById, 
+  getPosts, 
+  toggleLike 
+} from '../controllers/post.controller.js';
 import { jwtVerify } from '../middlewares/user.middleware.js';
+import { upload } from '../middlewares/multer.middleware.js';
 
+const router = express.Router();
 
-const router=express.Router();
+const routerPost = router
+  .get('/', getPosts)
+  .post('/create', upload.single('image'), createPost)
+  .get('/:postId', getPostById)
+  .post('/:postId/like', jwtVerify, toggleLike)
+  .post('/:postId/comments', jwtVerify, addComment)
+  .get('/:postId/comments', getComments);
 
-
-const routerPost= router
-.get('/',getPosts)
-.post('/create',createPost)
-
-
-export default routerPost
+export default routerPost;

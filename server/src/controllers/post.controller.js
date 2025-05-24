@@ -1,32 +1,180 @@
 import { postModel } from "../models/post.model.js";
 import { User } from "../models/user.model.js";
-// import jwt from 'jsonwebtoken'
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { StatusCodes } from "http-status-codes";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
+// Create post
 export const createPost = async (req, res) => {
-
-    const { _id, content } = req.body
-    console.log({ _id, content })
-
-    const post = await postModel.create({
-        user: _id,
-        content
-
-    })
-    console.log(post)
-    const user = await User.findById({ _id })
-    user.posts.push(post._id)
+  try {
+    const { _id, content } = req.body;
+    const postData = { user: _id, content };
+    
+    // Handle image upload if present
+    if (req.file) {
+      const imageLocalPath = req.file.path;
+      const image = await uploadOnCloudinary(imageLocalPath);
+      if (image) {
+        postData.image = image.url;
+      }
+    }
+    
+    const post = await postModel.create(postData);
+    
+    const user = await User.findById(_id);
+    user.posts.push(post._id);
     await user.save();
-    console.log(user)
+    
+    return res.status(StatusCodes.CREATED).json(
+      new ApiResponse(StatusCodes.CREATED, post, "Post created successfully")
+    );
+  } catch (error) {
+    return res.status(StatusCodes.BAD_REQUEST).json(
+      new ApiResponse(StatusCodes.BAD_REQUEST, {}, "Failed to create post")
+    );
+  }
+};
 
-}
-
+// Get all posts
 export const getPosts = async (req, res) => {
-
-    // console.log(req.user)
+  try {
+    const posts = await postModel.find({})
+      .populate("user", "username fullname avatar email")
+      .populate("likes", "username avatar")
+      .sort({ createdAt: -1 });
     
-    const post=await postModel.find({}).populate("user")
-    
-    console.log(post)
-    res.json(post)
+    return res.status(StatusCodes.OK).json(posts);
+  } catch (error) {
+    return res.status(StatusCodes.BAD_REQUEST).json(
+      new ApiResponse(StatusCodes.BAD_REQUEST, {}, "Failed to fetch posts")
+    );
+  }
+};
 
-}
+// Get single post
+export const getPostById = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const post = await postModel.findById(postId)
+      .populate("user", "username fullname avatar email")
+      .populate("likes", "username avatar")
+      .populate("comments.user", "username avatar");
+    
+    if (!post) {
+      return res.status(StatusCodes.NOT_FOUND).json(
+        new ApiResponse(StatusCodes.NOT_FOUND, {}, "Post not found")
+      );
+    }
+    
+    // Increment view count
+    post.viewCount += 1;
+    await post.save();
+    
+    return res.status(StatusCodes.OK).json(
+      new ApiResponse(StatusCodes.OK, post, "Post fetched successfully")
+    );
+  } catch (error) {
+    return res.status(StatusCodes.BAD_REQUEST).json(
+      new ApiResponse(StatusCodes.BAD_REQUEST, {}, "Failed to fetch post")
+    );
+  }
+};
+
+// Like/Unlike post
+export const toggleLike = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const userId = req.user._id;
+    
+    const post = await postModel.findById(postId);
+    if (!post) {
+      return res.status(StatusCodes.NOT_FOUND).json(
+        new ApiResponse(StatusCodes.NOT_FOUND, {}, "Post not found")
+      );
+    }
+    
+    // Check if user already liked the post
+    const likedIndex = post.likes.findIndex(
+      (id) => id.toString() === userId.toString()
+    );
+    
+    if (likedIndex === -1) {
+      // Like the post
+      post.likes.push(userId);
+    } else {
+      // Unlike the post
+      post.likes.splice(likedIndex, 1);
+    }
+    
+    await post.save();
+    
+    return res.status(StatusCodes.OK).json(
+      new ApiResponse(
+        StatusCodes.OK, 
+        { liked: likedIndex === -1, likesCount: post.likes.length }, 
+        "Post like toggled"
+      )
+    );
+  } catch (error) {
+    return res.status(StatusCodes.BAD_REQUEST).json(
+      new ApiResponse(StatusCodes.BAD_REQUEST, {}, "Failed to toggle like")
+    );
+  }
+};
+
+// Add comment
+export const addComment = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { content } = req.body;
+    const userId = req.user._id;
+    
+    const post = await postModel.findById(postId);
+    if (!post) {
+      return res.status(StatusCodes.NOT_FOUND).json(
+        new ApiResponse(StatusCodes.NOT_FOUND, {}, "Post not found")
+      );
+    }
+    
+    post.comments.push({ user: userId, content });
+    await post.save();
+    
+    // Populate the newly added comment
+    const populatedPost = await postModel.findById(postId)
+      .populate("comments.user", "username avatar");
+    
+    const newComment = populatedPost.comments[populatedPost.comments.length - 1];
+    
+    return res.status(StatusCodes.CREATED).json(
+      new ApiResponse(StatusCodes.CREATED, newComment, "Comment added successfully")
+    );
+  } catch (error) {
+    return res.status(StatusCodes.BAD_REQUEST).json(
+      new ApiResponse(StatusCodes.BAD_REQUEST, {}, "Failed to add comment")
+    );
+  }
+};
+
+// Get comments for a post
+export const getComments = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    
+    const post = await postModel.findById(postId)
+      .populate("comments.user", "username avatar");
+    
+    if (!post) {
+      return res.status(StatusCodes.NOT_FOUND).json(
+        new ApiResponse(StatusCodes.NOT_FOUND, {}, "Post not found")
+      );
+    }
+    
+    return res.status(StatusCodes.OK).json(
+      new ApiResponse(StatusCodes.OK, post.comments, "Comments fetched successfully")
+    );
+  } catch (error) {
+    return res.status(StatusCodes.BAD_REQUEST).json(
+      new ApiResponse(StatusCodes.BAD_REQUEST, {}, "Failed to fetch comments")
+    );
+  }
+};
