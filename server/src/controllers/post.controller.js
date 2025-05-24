@@ -98,7 +98,9 @@ export const toggleLike = async (req, res) => {
       (id) => id.toString() === userId.toString()
     );
     
-    if (likedIndex === -1) {
+    const liked = likedIndex === -1;
+    
+    if (liked) {
       // Like the post
       post.likes.push(userId);
     } else {
@@ -108,10 +110,16 @@ export const toggleLike = async (req, res) => {
     
     await post.save();
     
+    // Return the updated post
+    const updatedPost = await postModel.findById(postId)
+      .populate("user", "username fullname avatar email")
+      .populate("likes", "username avatar")
+      .populate("comments.user", "username avatar");
+    
     return res.status(StatusCodes.OK).json(
       new ApiResponse(
         StatusCodes.OK, 
-        { liked: likedIndex === -1, likesCount: post.likes.length }, 
+        { liked, post: updatedPost, likesCount: post.likes.length }, 
         "Post like toggled"
       )
     );
@@ -175,6 +183,46 @@ export const getComments = async (req, res) => {
   } catch (error) {
     return res.status(StatusCodes.BAD_REQUEST).json(
       new ApiResponse(StatusCodes.BAD_REQUEST, {}, "Failed to fetch comments")
+    );
+  }
+};
+
+// Delete post
+export const deletePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const userId = req.user._id;
+    
+    // Find the post
+    const post = await postModel.findById(postId);
+    
+    if (!post) {
+      return res.status(StatusCodes.NOT_FOUND).json(
+        new ApiResponse(StatusCodes.NOT_FOUND, {}, "Post not found")
+      );
+    }
+    
+    // Check if the user is the creator of the post
+    if (post.user.toString() !== userId.toString()) {
+      return res.status(StatusCodes.FORBIDDEN).json(
+        new ApiResponse(StatusCodes.FORBIDDEN, {}, "You don't have permission to delete this post")
+      );
+    }
+    
+    // Remove the post
+    await postModel.findByIdAndDelete(postId);
+    
+    // Also remove post reference from user's posts array
+    await User.findByIdAndUpdate(userId, {
+      $pull: { posts: postId }
+    });
+    
+    return res.status(StatusCodes.OK).json(
+      new ApiResponse(StatusCodes.OK, {}, "Post deleted successfully")
+    );
+  } catch (error) {
+    return res.status(StatusCodes.BAD_REQUEST).json(
+      new ApiResponse(StatusCodes.BAD_REQUEST, {}, "Failed to delete post")
     );
   }
 };

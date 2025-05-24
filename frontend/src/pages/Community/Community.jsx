@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { createPost, getPosts, toggleLike, addComment } from '../../store/services/postAction';
-import { FaHeart, FaRegHeart, FaComment, FaEye, FaShare } from 'react-icons/fa';
+import { createPost, getPosts, toggleLike, addComment, deletePost } from '../../store/services/postAction';
+import { FaHeart, FaRegHeart, FaComment, FaEye, FaShare, FaTrash, FaPlus } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -35,16 +35,22 @@ const Community = () => {
 
   const handleCreatePost = async (data) => {
     try {
+      if (!user) {
+        toast.warning("Please login to create a post");
+        return;
+      }
+      
       await dispatch(createPost({
         content: data.content,
         _id: user._id,
         image: data.image && data.image.length > 0 ? data.image[0] : null
       }));
       
+      // Reset all states properly
       toast.success("Post created successfully");
       setCreatePostModal(false);
       setImagePreview(null);
-      reset();
+      reset({ content: "", image: "" });
       
       // Refresh the posts
       dispatch(getPosts());
@@ -59,11 +65,35 @@ const Community = () => {
       toast.warning("Please login to like posts");
       return;
     }
+    
+    // Find the post in the current state
+    const targetPost = posts.find(post => post._id === postId);
+    if (!targetPost) return;
+    
+    // Determine current like status
+    const isCurrentlyLiked = isPostLikedByUser(targetPost);
+    
+    // Dispatch an immediate optimistic update to Redux
+    dispatch({
+      type: 'post/optimisticLikeToggle',
+      payload: {
+        postId,
+        userId: user._id,
+        isLiked: isCurrentlyLiked
+      }
+    });
+    
+    // Then dispatch the API call
     dispatch(toggleLike(postId));
   };
 
   const handleAddComment = async (data, postId) => {
     try {
+      if (!user) {
+        toast.warning("Please login to comment");
+        return;
+      }
+      
       await dispatch(addComment({
         postId,
         content: data.commentContent
@@ -80,6 +110,18 @@ const Community = () => {
       console.error(error);
     }
   };
+  
+  const handleDeletePost = async (postId) => {
+    try {
+      if (window.confirm("Are you sure you want to delete this post? This action cannot be undone.")) {
+        await dispatch(deletePost(postId));
+        toast.success("Post deleted successfully");
+      }
+    } catch (error) {
+      toast.error("Failed to delete post");
+      console.error(error);
+    }
+  };
 
   // Fetch posts on component mount
   useEffect(() => {
@@ -87,20 +129,40 @@ const Community = () => {
   }, [dispatch]);
 
   const isPostLikedByUser = (post) => {
-    return post.likes && post.likes.some(like => like._id === user?._id);
+    if (!user || !post.likes) return false;
+    return post.likes.some(like => like._id === user._id);
   };
 
+  // Create Post Button component - always visible
+  const CreatePostButton = () => (
+    <button 
+      onClick={() => setCreatePostModal(true)}
+      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center"
+    >
+      <span className="mr-2">Create Post</span>
+      <span className="text-xl">+</span>
+    </button>
+  );
+
+  // Add this floating action button component
+  const FloatingCreateButton = () => (
+    <button
+      onClick={() => setCreatePostModal(true)}
+      className="fixed bottom-20 right-8 bg-green-600 hover:bg-green-700 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg z-20"
+      aria-label="Create new post"
+    >
+      <FaPlus size={20} />
+    </button>
+  );
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-slate-800">Community</h1>
-        <button 
-          onClick={() => setCreatePostModal(true)}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center"
-        >
-          <span className="mr-2">Create Post</span>
-          <span className="text-xl">+</span>
-        </button>
+    <div className="container mx-auto px-4 pt-24 pb-20 relative min-h-screen">
+      {/* Simple header with Create Post button */}
+      <div className="mb-8">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-slate-800">Community</h1>
+          {/* <CreatePostButton /> */}
+        </div>
       </div>
       
       {/* Post creation modal */}
@@ -172,19 +234,32 @@ const Community = () => {
         ) : posts.length > 0 ? (
           posts.map((post) => (
             <div key={post._id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
-              {/* Post header */}
-              <div className="flex items-center p-4 border-b">
-                <img 
-                  src={post.user?.avatar || '/default-avatar.png'} 
-                  alt={post.user?.username}
-                  className="w-10 h-10 rounded-full mr-3 object-cover"
-                />
-                <div>
-                  <h3 className="font-semibold text-gray-800">{post.user?.fullname || post.user?.username}</h3>
-                  <p className="text-sm text-gray-500">
-                    {post.createdAt && formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-                  </p>
+              {/* Post header with delete button */}
+              <div className="flex items-center p-4 border-b justify-between">
+                <div className="flex items-center">
+                  <img 
+                    src={post.user?.avatar || '/default-avatar.png'} 
+                    alt={post.user?.username}
+                    className="w-10 h-10 rounded-full mr-3 object-cover"
+                  />
+                  <div>
+                    <h3 className="font-semibold text-gray-800">{post.user?.fullname || post.user?.username}</h3>
+                    <p className="text-sm text-gray-500">
+                      {post.createdAt && formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                    </p>
+                  </div>
                 </div>
+                
+                {/* Delete button - only visible for post creator */}
+                {user && post.user && user._id === post.user._id && (
+                  <button 
+                    onClick={() => handleDeletePost(post._id)} 
+                    className="text-gray-500 hover:text-red-500 p-1"
+                    title="Delete post"
+                  >
+                    <FaTrash />
+                  </button>
+                )}
               </div>
               
               {/* Post content */}
@@ -249,8 +324,12 @@ const Community = () => {
                       <div key={index} className="flex">
                         <img 
                           src={comment.user?.avatar || '/default-avatar.png'} 
-                          alt={comment.user?.username} 
-                          className="w-8 h-8 rounded-full mr-2"
+                          alt={comment.user?.username || 'User'}
+                          className="w-8 h-8 rounded-full mr-2 object-cover bg-gray-200"
+                          onError={(e) => {
+                            e.target.src = '/default-avatar.png';
+                            e.target.onerror = null;
+                          }}
                         />
                         <div className="bg-white p-3 rounded-lg flex-1">
                           <div className="font-medium text-gray-800">{comment.user?.username}</div>
@@ -310,15 +389,16 @@ const Community = () => {
         ) : (
           <div className="text-center py-8 bg-white rounded-lg shadow">
             <p className="text-gray-600 mb-4">No posts yet. Be the first to share something!</p>
-            <button 
-              onClick={() => setCreatePostModal(true)}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
-            >
-              Create Post
-            </button>
+            <CreatePostButton />
           </div>
         )}
       </div>
+      
+      {/* Add this spacer div to ensure content doesn't get hidden behind footer */}
+      <div className="h-16"></div>
+      
+      {/* Floating button */}
+      <FloatingCreateButton />
     </div>
   );
 };

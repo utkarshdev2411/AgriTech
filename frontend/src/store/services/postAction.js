@@ -64,14 +64,19 @@ const createPost = createAsyncThunk(
 
 const toggleLike = createAsyncThunk(
   "post/toggleLike",
-  async (postId, { rejectWithValue }) => {
+  async (postId, { rejectWithValue, getState }) => {
     try {
       const response = await axios.post(
         `${API_BASE_URL}/post/${postId}/like`,
         {},
         { withCredentials: true }
       );
-      return { ...response.data, postId };
+      
+      // Return full response data including the updated post
+      return { 
+        ...response.data, 
+        postId 
+      };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -109,11 +114,27 @@ const getComments = createAsyncThunk(
   }
 );
 
+const deletePost = createAsyncThunk(
+  "post/deletePost",
+  async (postId, { rejectWithValue }) => {
+    try {
+      const response = await axios.delete(
+        `${API_BASE_URL}/post/${postId}`,
+        { withCredentials: true }
+      );
+      return { ...response.data, postId };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 export {
   getPosts,
   getPostById,
   createPost,
   toggleLike,
   addComment,
-  getComments
+  getComments,
+  deletePost
 };

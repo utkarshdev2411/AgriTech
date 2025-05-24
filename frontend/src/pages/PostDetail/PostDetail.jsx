@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getPostById, toggleLike, addComment } from '../../store/services/postAction';
+import { updateCurrentPost } from '../../store/features/postSlice'; // Add this import
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { FaHeart, FaRegHeart, FaComment, FaEye, FaShare, FaArrowLeft } from 'react-icons/fa';
@@ -19,6 +20,17 @@ const PostDetail = () => {
   useEffect(() => {
     if (postId) {
       dispatch(getPostById(postId));
+      
+      // Record view count only once per session for this post
+      const viewedPosts = JSON.parse(sessionStorage.getItem('viewedPosts') || '{}');
+      if (!viewedPosts[postId]) {
+        // If not already viewed in this session, increment view server-side
+        viewedPosts[postId] = true;
+        sessionStorage.setItem('viewedPosts', JSON.stringify(viewedPosts));
+        
+        // Optional: You could dispatch a separate action here to increment view
+        // dispatch(incrementPostView(postId));
+      }
     }
     
     return () => {
@@ -32,11 +44,30 @@ const PostDetail = () => {
       toast.warning("Please login to like posts");
       return;
     }
+    
+    // Optimistic UI update
+    const isCurrentlyLiked = isPostLikedByUser();
+    const optimisticPost = {
+      ...currentPost,
+      likes: isCurrentlyLiked 
+        ? currentPost.likes.filter(like => like._id !== user._id)
+        : [...currentPost.likes, { _id: user._id }]
+    };
+    
+    // Update local state immediately using the action creator
+    dispatch(updateCurrentPost(optimisticPost));
+    
+    // Then dispatch the actual API call
     dispatch(toggleLike(postId));
   };
   
   const handleAddComment = async (data) => {
     try {
+      if (!user) {
+        toast.warning("Please login to comment");
+        return;
+      }
+      
       await dispatch(addComment({
         postId,
         content: data.commentContent
@@ -44,6 +75,9 @@ const PostDetail = () => {
       
       toast.success("Comment added successfully");
       reset();
+      
+      // Refresh the post data
+      dispatch(getPostById(postId));
     } catch (error) {
       toast.error("Failed to add comment");
       console.error(error);
@@ -51,13 +85,15 @@ const PostDetail = () => {
   };
   
   const isPostLikedByUser = () => {
-    return currentPost?.likes && currentPost.likes.some(like => like._id === user?._id);
+    if (!user || !currentPost?.likes) return false;
+    return currentPost.likes.some(like => like._id === user._id);
   };
   
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
-        <p>Loading post...</p>
+        <div className="w-16 h-16 border-4 border-gray-200 border-t-green-500 rounded-full animate-spin mx-auto"></div>
+        <p className="mt-4 text-gray-600">Loading post...</p>
       </div>
     );
   }
@@ -84,8 +120,12 @@ const PostDetail = () => {
         <div className="flex items-center p-4 border-b">
           <img 
             src={currentPost.user?.avatar || '/default-avatar.png'} 
-            alt={currentPost.user?.username}
-            className="w-12 h-12 rounded-full mr-3 object-cover"
+            alt={currentPost.user?.username || 'User'}
+            className="w-12 h-12 rounded-full mr-3 object-cover bg-gray-200"
+            onError={(e) => {
+              e.target.src = '/default-avatar.png';
+              e.target.onerror = null;
+            }}
           />
           <div>
             <h3 className="font-semibold text-gray-800 text-lg">{currentPost.user?.fullname || currentPost.user?.username}</h3>
@@ -153,8 +193,12 @@ const PostDetail = () => {
             <div className="flex">
               <img 
                 src={user?.avatar || '/default-avatar.png'} 
-                alt={user?.username} 
-                className="w-10 h-10 rounded-full mr-3"
+                alt={user?.username || 'User'} 
+                className="w-10 h-10 rounded-full mr-3 bg-gray-200"
+                onError={(e) => {
+                  e.target.src = '/default-avatar.png';
+                  e.target.onerror = null;
+                }}
               />
               <div className="flex-1">
                 <textarea
@@ -185,12 +229,16 @@ const PostDetail = () => {
               <div key={index} className="flex">
                 <img 
                   src={comment.user?.avatar || '/default-avatar.png'} 
-                  alt={comment.user?.username} 
-                  className="w-10 h-10 rounded-full mr-3"
+                  alt={comment.user?.username || 'User'} 
+                  className="w-10 h-10 rounded-full mr-3 bg-gray-200"
+                  onError={(e) => {
+                    e.target.src = '/default-avatar.png';
+                    e.target.onerror = null;
+                  }}
                 />
                 <div className="bg-gray-50 p-4 rounded-lg flex-1">
                   <div className="flex justify-between items-start mb-1">
-                    <div className="font-medium text-gray-800">{comment.user?.username}</div>
+                    <div className="font-medium text-gray-800">{comment.user?.username || 'Anonymous'}</div>
                     {comment.createdAt && (
                       <div className="text-xs text-gray-500">
                         {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}

@@ -5,7 +5,8 @@ import {
   getPostById, 
   toggleLike, 
   addComment, 
-  getComments 
+  getComments,
+  deletePost 
 } from '../services/postAction';
 
 const initialState = {
@@ -22,6 +23,9 @@ const postSlice = createSlice({
   reducers: {
     clearCurrentPost: (state) => {
       state.currentPost = null;
+    },
+    updateCurrentPost: (state, action) => {
+      state.currentPost = action.payload;
     }
   },
   extraReducers: (builder) => {
@@ -84,29 +88,30 @@ const postSlice = createSlice({
       })
       .addCase(toggleLike.fulfilled, (state, action) => {
         state.loading = false;
-        const { postId, data } = action.payload;
+        // No need to update the likes array here since we already did it optimistically
+        // Just update any other fields from the API response if needed
         
-        // Update the post in the posts array
-        state.posts = state.posts.map(post => {
-          if (post._id === postId) {
-            return {
-              ...post,
-              likes: data.liked 
-                ? [...(post.likes || []), state.currentUser] 
-                : (post.likes || []).filter(like => like._id !== state.currentUser._id)
+        // If you want to ensure data consistency with the server:
+        const { postId, data } = action.payload;
+        if (data && data.post && data.post.likes) {
+          // Get the full post data from API response
+          state.posts = state.posts.map(post => {
+            if (post._id === postId) {
+              return {
+                ...post,
+                likes: data.post.likes  // Use server data for likes array
+              };
+            }
+            return post;
+          });
+          
+          // Update currentPost if needed
+          if (state.currentPost && state.currentPost._id === postId) {
+            state.currentPost = {
+              ...state.currentPost,
+              likes: data.post.likes  // Use server data
             };
           }
-          return post;
-        });
-        
-        // Update currentPost if it exists and matches
-        if (state.currentPost && state.currentPost._id === postId) {
-          state.currentPost = {
-            ...state.currentPost,
-            likes: data.liked 
-              ? [...(state.currentPost.likes || []), state.currentUser] 
-              : (state.currentPost.likes || []).filter(like => like._id !== state.currentUser._id)
-          };
         }
       })
       .addCase(toggleLike.rejected, (state, action) => {
@@ -178,9 +183,55 @@ const postSlice = createSlice({
       .addCase(getComments.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      
+      // Delete Post
+      .addCase(deletePost.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deletePost.fulfilled, (state, action) => {
+        state.loading = false;
+        // Remove the deleted post from posts array
+        state.posts = state.posts.filter(post => post._id !== action.payload.postId);
+        // Clear currentPost if it was the deleted post
+        if (state.currentPost && state.currentPost._id === action.payload.postId) {
+          state.currentPost = null;
+        }
+      })
+      .addCase(deletePost.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
+      // Optimistic Like Toggle
+      .addCase('post/optimisticLikeToggle', (state, action) => {
+        const { postId, userId, isLiked } = action.payload;
+        
+        state.posts = state.posts.map(post => {
+          if (post._id === postId) {
+            return {
+              ...post,
+              likes: isLiked
+                ? post.likes.filter(like => like._id !== userId)
+                : [...(post.likes || []), { _id: userId }]
+            };
+          }
+          return post;
+        });
+        
+        // Also update currentPost if it exists
+        if (state.currentPost && state.currentPost._id === postId) {
+          state.currentPost = {
+            ...state.currentPost,
+            likes: isLiked
+              ? state.currentPost.likes.filter(like => like._id !== userId)
+              : [...(state.currentPost.likes || []), { _id: userId }]
+          };
+        }
       });
   }
 });
 
-export const { clearCurrentPost } = postSlice.actions;
+export const { clearCurrentPost, updateCurrentPost } = postSlice.actions;
 export default postSlice.reducer;
