@@ -41,6 +41,7 @@ export const getPosts = async (req, res) => {
     const posts = await postModel.find({})
       .populate("user", "username fullname avatar email")
       .populate("likes", "username avatar")
+      .populate("comments.user", "username fullname avatar") // Add this line
       .sort({ createdAt: -1 });
     
     return res.status(StatusCodes.OK).json(posts);
@@ -66,10 +67,6 @@ export const getPostById = async (req, res) => {
       );
     }
     
-    // Increment view count
-    post.viewCount += 1;
-    await post.save();
-    
     return res.status(StatusCodes.OK).json(
       new ApiResponse(StatusCodes.OK, post, "Post fetched successfully")
     );
@@ -78,7 +75,7 @@ export const getPostById = async (req, res) => {
       new ApiResponse(StatusCodes.BAD_REQUEST, {}, "Failed to fetch post")
     );
   }
-};
+};// Add this line
 
 // Like/Unlike post
 export const toggleLike = async (req, res) => {
@@ -147,14 +144,19 @@ export const addComment = async (req, res) => {
     post.comments.push({ user: userId, content });
     await post.save();
     
-    // Populate the newly added comment
+    // Fetch the fully populated post to return
     const populatedPost = await postModel.findById(postId)
+      .populate("user", "username fullname avatar email")
+      .populate("likes", "username avatar")
       .populate("comments.user", "username avatar");
     
+    // Get just the new comment
     const newComment = populatedPost.comments[populatedPost.comments.length - 1];
     
     return res.status(StatusCodes.CREATED).json(
-      new ApiResponse(StatusCodes.CREATED, newComment, "Comment added successfully")
+      new ApiResponse(StatusCodes.CREATED, 
+        { newComment, fullPost: populatedPost }, 
+        "Comment added successfully")
     );
   } catch (error) {
     return res.status(StatusCodes.BAD_REQUEST).json(
@@ -223,6 +225,32 @@ export const deletePost = async (req, res) => {
   } catch (error) {
     return res.status(StatusCodes.BAD_REQUEST).json(
       new ApiResponse(StatusCodes.BAD_REQUEST, {}, "Failed to delete post")
+    );
+  }
+};
+
+// Add this new controller function
+export const incrementView = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    
+    const post = await postModel.findById(postId);
+    if (!post) {
+      return res.status(StatusCodes.NOT_FOUND).json(
+        new ApiResponse(StatusCodes.NOT_FOUND, {}, "Post not found")
+      );
+    }
+    
+    // Increment view count
+    post.viewCount += 1;
+    await post.save();
+    
+    return res.status(StatusCodes.OK).json(
+      new ApiResponse(StatusCodes.OK, { viewCount: post.viewCount }, "View count updated")
+    );
+  } catch (error) {
+    return res.status(StatusCodes.BAD_REQUEST).json(
+      new ApiResponse(StatusCodes.BAD_REQUEST, {}, "Failed to update view count")
     );
   }
 };

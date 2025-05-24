@@ -94,17 +94,17 @@ const Community = () => {
         return;
       }
       
-      await dispatch(addComment({
+      const result = await dispatch(addComment({
         postId,
         content: data.commentContent
       }));
       
-      toast.success("Comment added successfully");
-      setCommentingOnPost(null);
-      reset();
-      
-      // Refresh the posts
-      dispatch(getPosts());
+      if (!result.error) {
+        toast.success("Comment added successfully");
+        setCommentingOnPost(null);
+        reset();
+        // No need to fetch the post again, the redux store is already updated
+      }
     } catch (error) {
       toast.error("Failed to add comment");
       console.error(error);

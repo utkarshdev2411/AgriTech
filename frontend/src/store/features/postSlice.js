@@ -6,7 +6,8 @@ import {
   toggleLike, 
   addComment, 
   getComments,
-  deletePost 
+  deletePost,
+  incrementPostView
 } from '../services/postAction';
 
 const initialState = {
@@ -53,13 +54,24 @@ const postSlice = createSlice({
       })
       .addCase(getPostById.fulfilled, (state, action) => {
         state.loading = false;
-        state.currentPost = action.payload.data;
-        state.status = true;
+        const { postId, data } = action.payload;
+        
+        // Update the post in the posts array with fully populated data
+        state.posts = state.posts.map(post => {
+          if (post._id === postId) {
+            return data;
+          }
+          return post;
+        });
+        
+        // Also update currentPost if needed
+        if (state.currentPost && state.currentPost._id === postId) {
+          state.currentPost = data;
+        }
       })
       .addCase(getPostById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        state.status = false;
       })
 
       // Create Post
@@ -128,23 +140,38 @@ const postSlice = createSlice({
         state.loading = false;
         const { postId, data } = action.payload;
         
-        // Update the post in the posts array
-        state.posts = state.posts.map(post => {
-          if (post._id === postId) {
-            return {
-              ...post,
-              comments: [...(post.comments || []), data]
+        // Use the full post data returned from the API
+        if (data && data.fullPost) {
+          // Update the post in the posts array with the fully populated post
+          state.posts = state.posts.map(post => {
+            if (post._id === postId) {
+              return data.fullPost;
+            }
+            return post;
+          });
+          
+          // Update currentPost if it exists and matches
+          if (state.currentPost && state.currentPost._id === postId) {
+            state.currentPost = data.fullPost;
+          }
+        } else {
+          // Fallback to old behavior if fullPost isn't available
+          state.posts = state.posts.map(post => {
+            if (post._id === postId) {
+              return {
+                ...post,
+                comments: [...(post.comments || []), data.newComment || data]
+              };
+            }
+            return post;
+          });
+          
+          if (state.currentPost && state.currentPost._id === postId) {
+            state.currentPost = {
+              ...state.currentPost,
+              comments: [...(state.currentPost.comments || []), data.newComment || data]
             };
           }
-          return post;
-        });
-        
-        // Update currentPost if it exists and matches
-        if (state.currentPost && state.currentPost._id === postId) {
-          state.currentPost = {
-            ...state.currentPost,
-            comments: [...(state.currentPost.comments || []), data]
-          };
         }
       })
       .addCase(addComment.rejected, (state, action) => {
@@ -229,6 +256,36 @@ const postSlice = createSlice({
               : [...(state.currentPost.likes || []), { _id: userId }]
           };
         }
+      })
+      
+      // Increment Post View
+      .addCase(incrementPostView.pending, (state) => {
+        // No need to set loading state for view increments
+      })
+      .addCase(incrementPostView.fulfilled, (state, action) => {
+        const { postId, data } = action.payload;
+        
+        // Update the post in the posts array
+        state.posts = state.posts.map(post => {
+          if (post._id === postId) {
+            return {
+              ...post,
+              viewCount: data.viewCount
+            };
+          }
+          return post;
+        });
+        
+        // Also update currentPost if it exists
+        if (state.currentPost && state.currentPost._id === postId) {
+          state.currentPost = {
+            ...state.currentPost,
+            viewCount: data.viewCount
+          };
+        }
+      })
+      .addCase(incrementPostView.rejected, (state, action) => {
+        // No need to handle view increment failures in the UI
       });
   }
 });

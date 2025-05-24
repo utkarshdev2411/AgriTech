@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { getPostById, toggleLike, addComment } from '../../store/services/postAction';
+import { getPostById, toggleLike, addComment, incrementPostView } from '../../store/services/postAction';
 import { updateCurrentPost } from '../../store/features/postSlice'; // Add this import
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
@@ -19,17 +19,18 @@ const PostDetail = () => {
   
   useEffect(() => {
     if (postId) {
+      // First fetch post data
       dispatch(getPostById(postId));
       
-      // Record view count only once per session for this post
+      // Record view only once per session for this post
       const viewedPosts = JSON.parse(sessionStorage.getItem('viewedPosts') || '{}');
       if (!viewedPosts[postId]) {
-        // If not already viewed in this session, increment view server-side
+        // If not already viewed in this session, increment view
         viewedPosts[postId] = true;
         sessionStorage.setItem('viewedPosts', JSON.stringify(viewedPosts));
         
-        // Optional: You could dispatch a separate action here to increment view
-        // dispatch(incrementPostView(postId));
+        // Dispatch a separate action to increment view
+        dispatch(incrementPostView(postId));
       }
     }
     

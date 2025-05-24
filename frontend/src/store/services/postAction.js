@@ -21,10 +21,15 @@ const getPostById = createAsyncThunk(
   "post/getPostById",
   async (postId, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/post/${postId}`, {
-        withCredentials: true
-      });
-      return response.data;
+      const response = await axios.get(
+        `${API_BASE_URL}/post/${postId}`,
+        { withCredentials: true }
+      );
+      
+      return { 
+        postId,
+        data: response.data.data
+      };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -129,6 +134,28 @@ const deletePost = createAsyncThunk(
   }
 );
 
+// Add this new action
+const incrementPostView = createAsyncThunk(
+  "post/incrementView",
+  async (postId, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/post/${postId}/view`,
+        {},
+        { withCredentials: true }
+      );
+      
+      return { 
+        postId,
+        data: response.data.data
+      };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+// Export it along with other actions
 export {
   getPosts,
   getPostById,
@@ -136,5 +163,6 @@ export {
   toggleLike,
   addComment,
   getComments,
-  deletePost
+  deletePost,
+  incrementPostView
 };

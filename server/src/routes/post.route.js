@@ -6,7 +6,8 @@ import {
   getPostById, 
   getPosts, 
   toggleLike,
-  deletePost // Add this import
+  deletePost,
+  incrementView
 } from '../controllers/post.controller.js';
 import { jwtVerify } from '../middlewares/user.middleware.js';
 import { upload } from '../middlewares/multer.middleware.js';
@@ -20,6 +21,7 @@ const routerPost = router
   .post('/:postId/like', jwtVerify, toggleLike)
   .post('/:postId/comments', jwtVerify, addComment)
   .get('/:postId/comments', getComments)
-  .delete('/:postId', jwtVerify, deletePost); // Add this line
+  .delete('/:postId', jwtVerify, deletePost)
+  .post('/:postId/view', incrementView);
 
 export default routerPost;
