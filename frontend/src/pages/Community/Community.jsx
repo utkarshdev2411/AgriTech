@@ -266,12 +266,17 @@ const Community = () => {
               <div className="p-4">
                 <p className="text-gray-800 mb-3">{post.content}</p>
                 
+                {/* Post image - add this block */}
                 {post.image && (
                   <div className="mb-3 rounded-lg overflow-hidden">
                     <img 
                       src={post.image} 
                       alt="Post attachment" 
                       className="w-full h-auto max-h-[400px] object-contain"
+                      onError={(e) => {
+                        console.error("Image failed to load:", e);
+                        e.target.style.display = 'none';
+                      }}
                     />
                   </div>
                 )}

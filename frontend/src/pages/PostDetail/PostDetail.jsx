@@ -141,11 +141,16 @@ const PostDetail = () => {
           <p className="text-gray-800 text-lg mb-6">{currentPost.content}</p>
           
           {currentPost.image && (
-            <div className="mb-6 rounded-lg overflow-hidden">
+            <div className="mb-3 rounded-lg overflow-hidden">
               <img 
                 src={currentPost.image} 
                 alt="Post attachment" 
-                className="w-full h-auto max-h-[600px] object-contain"
+                className="w-full h-auto max-h-[400px] object-contain"
+                onLoad={() => console.log("Image loaded successfully:", currentPost.image)}
+                onError={(e) => {
+                  console.error("Image failed to load:", currentPost.image, e);
+                  e.target.style.display = 'none';
+                }}
               />
             </div>
           )}

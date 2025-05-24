@@ -3,19 +3,23 @@ import { User } from "../models/user.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { StatusCodes } from "http-status-codes";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { uploadToGridFS } from "../utils/fileStorage.js";
+
 
 // Create post
 export const createPost = async (req, res) => {
-  try {
+ try {
     const { _id, content } = req.body;
     const postData = { user: _id, content };
     
     // Handle image upload if present
     if (req.file) {
       const imageLocalPath = req.file.path;
-      const image = await uploadOnCloudinary(imageLocalPath);
-      if (image) {
-        postData.image = image.url;
+      const fileData = await uploadToGridFS(imageLocalPath);
+      
+      if (fileData) {
+        // Add the full server URL to the image path
+        postData.image = `http://localhost:8000/post/image/${fileData.id}`;
       }
     }
     
