@@ -160,7 +160,7 @@ const Home = () => {
               </div>
             </Link>
             
-            <Link to={'comment'} className='group rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden transform hover:-translate-y-2 hover:border-blue-200'>
+            <Link to={'community'} className='group rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden transform hover:-translate-y-2 hover:border-blue-200'>
               <div className="p-8 flex flex-col h-full relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="h-20 w-20 rounded-full bg-blue-50 flex items-center justify-center mb-6 mx-auto group-hover:bg-blue-100 transition-all duration-300 transform group-hover:scale-110 relative">
@@ -295,7 +295,7 @@ const Home = () => {
               </Link>
             </div>
             
-            <Link to="/comment" className="px-8 py-4 rounded-lg bg-white text-green-600 border-2 border-green-500 font-bold text-lg hover:bg-green-50 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
+            <Link to="/community" className="px-8 py-4 rounded-lg bg-white text-green-600 border-2 border-green-500 font-bold text-lg hover:bg-green-50 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
               Explore Community
             </Link>
           </div>

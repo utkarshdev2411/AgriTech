@@ -74,7 +74,7 @@ const Navbar = () => {
             Diagnosis
             <span className="absolute left-0 right-0 bottom-0 h-1 bg-gradient-to-r from-green-500 to-green-400 rounded-full transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"></span>
           </NavLink>
-          <NavLink to={'/comment'} className={navLinkClass}>
+          <NavLink to={'/community'} className={navLinkClass}>
             Community
             <span className="absolute left-0 right-0 bottom-0 h-1 bg-gradient-to-r from-green-500 to-green-400 rounded-full transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"></span>
           </NavLink>
@@ -102,7 +102,7 @@ const Navbar = () => {
           <NavLink to={'/'} className="py-4 text-xl font-bold border-b border-gray-100 text-slate-800" onClick={toggleMobileMenu}>Home</NavLink>
           <NavLink to={'/soildiagnosis'} className="py-4 text-xl font-bold border-b border-gray-100 text-slate-800" onClick={toggleMobileMenu}>Analysis</NavLink>
           <NavLink to={'/cropdiagnosis'} className="py-4 text-xl font-bold border-b border-gray-100 text-slate-800" onClick={toggleMobileMenu}>Diagnosis</NavLink>
-          <NavLink to={'/comment'} className="py-4 text-xl font-bold border-b border-gray-100 text-slate-800" onClick={toggleMobileMenu}>Community</NavLink>
+          <NavLink to={'/community'} className="py-4 text-xl font-bold border-b border-gray-100 text-slate-800" onClick={toggleMobileMenu}>Community</NavLink>
           
           <div className="mt-8 flex flex-col gap-5">
             {status && (

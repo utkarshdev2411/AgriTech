@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import { createPost, getPosts } from '../../store/services/postAction';
 
-const Comment = () => {
+const Community = () => {
   const { register, handleSubmit, reset } = useForm();
   const dispatch = useDispatch();
   const [createPosts, setCreatePosts] = useState(false)
@@ -90,4 +90,4 @@ const Comment = () => {
   );
 };
 
-export default Comment
+export default Community;

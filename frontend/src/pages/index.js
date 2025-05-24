@@ -4,7 +4,7 @@ import Signup from "./Signup/Signup";
 import CropDiagnosis from './CropDiagnosis/CropDiagnosis'
 import SoilDiagnosis from "./SoilDiagnosis/SoilDiagnosis";
 import UserProfile from './UserProfile/UserProfile'
-import Comment from "./Comment/Comment";
+import Community from "./Community/Community";
 
 export{
     Home,
@@ -13,6 +13,5 @@ export{
     CropDiagnosis,
     SoilDiagnosis,
     UserProfile,
-    Comment
-    
+    Community
 }
