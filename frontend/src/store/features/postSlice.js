@@ -68,18 +68,16 @@ const postSlice = createSlice({
         state.loading = false;
         const { postId, data } = action.payload;
         
-        // Update the post in the posts array with fully populated data
+        // Always set the currentPost regardless of previous state
+        state.currentPost = data;
+        
+        // Also update in the posts array if it exists there
         state.posts = state.posts.map(post => {
           if (post._id === postId) {
             return data;
           }
           return post;
         });
-        
-        // Also update currentPost if needed
-        if (state.currentPost && state.currentPost._id === postId) {
-          state.currentPost = data;
-        }
       })
       .addCase(getPostById.rejected, (state, action) => {
         state.loading = false;

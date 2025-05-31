@@ -4,13 +4,14 @@ import { useDispatch, useSelector }  from 'react-redux';
 import { toast } from 'react-toastify';
 import { createPost, getPosts, toggleLike, addComment, deletePost, incrementPostView } from '../../store/services/postAction';
 import { FaHeart, FaRegHeart, FaComment, FaEye, FaShare, FaTrash, FaPlus, FaImage, FaTimes, FaArrowUp } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import ShareModal from '../../components/ShareModal';
 
 const Community = () => {
   const { register, handleSubmit, reset, watch } = useForm();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [createPostModal, setCreatePostModal] = useState(false);
   const [commentingOnPost, setCommentingOnPost] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -324,9 +325,11 @@ const Community = () => {
                   data-postid={post._id}
                   className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition-all duration-200 overflow-hidden shadow-sm hover:shadow-md"
                 >
-                  {/* Post header */}
                   <div className="flex items-center justify-between p-4 border-b border-gray-100">
-                    <div className="flex items-center space-x-3">
+                    <div 
+                      className="flex items-center space-x-3 cursor-pointer"
+                      onClick={() => navigate(`/post/${post._id}`)}
+                    >
                       <img 
                         src={post.user?.avatar || '/default-avatar.png'} 
                         alt={post.user?.username}
@@ -343,7 +346,10 @@ const Community = () => {
                     {/* Delete button - only show for post owner */}
                     {user && post.user && user._id === post.user._id && (
                       <button 
-                        onClick={() => handleDeletePost(post._id)} 
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent navigation when clicking delete
+                          handleDeletePost(post._id);
+                        }} 
                         className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
                         title="Delete post"
                       >
@@ -352,8 +358,11 @@ const Community = () => {
                     )}
                   </div>
                   
-                  {/* Post content */}
-                  <div className="p-4">
+                  {/* Post content - make it clickable */}
+                  <div 
+                    className="p-4 cursor-pointer"
+                    onClick={() => navigate(`/post/${post._id}`)}
+                  >
                     <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">{post.content}</p>
                     
                     {post.image && (
