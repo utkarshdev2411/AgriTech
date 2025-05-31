@@ -223,7 +223,7 @@ const Home = () => {
         
         <div className="max-w-3xl mx-auto text-center relative">
           <div className="inline-block px-6 py-1.5 bg-green-50 rounded-full border border-green-100 mb-8">
-            <span className="text-green-600 font-semibold tracking-wide">Testimonials</span>
+            <span className="text-green-600 font-semibold tracking-wide">Creators Words</span>
           </div>
           
           <div className="relative">
@@ -232,7 +232,7 @@ const Home = () => {
             
             <blockquote className="text-xl md:text-2xl text-slate-700 font-light leading-relaxed italic mb-10 relative">
               <span className="text-green-600 text-3xl absolute -left-4 top-0">"</span>
-              AgriTech has transformed my farming practices completely. The crop diagnosis feature saved my tomato plants from a disease I couldn't identify, and the community support has been invaluable for a small farmer like me.
+              Agritech started as a hackathon project, with an idea serving the farming community in India. Leverage th farmers with the power of AI and machine learning to learn, diagnose, and grow their crops better. It has been a great journey so far, and we are excited to see how it evolves.
               <span className="text-green-600 text-3xl absolute -right-4 bottom-0">"</span>
             </blockquote>
             
@@ -241,8 +241,8 @@ const Home = () => {
                 <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Farmer testimonial" className="h-full w-full object-cover" />
               </div>
               <div className="text-left">
-                <p className="font-bold text-slate-800 text-lg">Rajesh Kumar</p>
-                <p className="text-sm text-green-600">Wheat Farmer, Punjab</p>
+                <p className="font-bold text-slate-800 text-lg">Utkarsh Sharma</p>
+                <p className="text-sm text-green-600">Developer of Agritech</p>
               </div>
             </div>
           </div>
