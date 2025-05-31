@@ -3,7 +3,11 @@ import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector }  from 'react-redux';
 import { toast } from 'react-toastify';
 import { createPost, getPosts, toggleLike, addComment, deletePost, incrementPostView } from '../../store/services/postAction';
-import { FaHeart, FaRegHeart, FaComment, FaEye, FaShare, FaTrash, FaPlus, FaImage, FaTimes, FaArrowUp } from 'react-icons/fa';
+import { 
+  FaHeart, FaRegHeart, FaComment, FaEye, FaShare, FaTrash, FaPlus, 
+  FaImage, FaTimes, FaArrowUp, FaCalendarAlt, FaStore,
+  FaUsers, FaSeedling, FaLeaf
+} from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import ShareModal from '../../components/ShareModal';
@@ -297,254 +301,368 @@ const Community = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 pt-20 md:pt-24">
-        {/* Button Container - properly aligned */}
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={() => setCreatePostModal(true)}
-            className="hidden md:flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-full font-medium transition-colors duration-200"
-          >
-            <FaPlus className="mr-2" size={14} />
-            Create Post
-          </button>
-        </div>
-        
-        {/* Posts feed */}
-        <div className="space-y-4">
-          {loading && posts.length === 0 ? (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      {/* Main Content - Changed to two-column layout */}
+      <div className="max-w-6xl mx-auto px-4 pt-20 md:pt-24">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Left column - Main feed (70% width on large screens) */}
+          <div className="lg:w-[70%]">
+            {/* Topic Categories */}
+            <div className="mb-6">
+              <h3 className="font-semibold text-gray-900 mb-3">Topics</h3>
+              <div className="flex flex-wrap gap-2">
+                <button className="px-4 py-2 bg-green-100 text-green-800 rounded-full font-medium hover:bg-green-200 transition-colors">All Posts</button>
+                <button className="px-4 py-2 bg-white text-gray-700 rounded-full font-medium hover:bg-green-100 transition-colors">Crops</button>
+                <button className="px-4 py-2 bg-white text-gray-700 rounded-full font-medium hover:bg-green-100 transition-colors">Pest Control</button>
+                <button className="px-4 py-2 bg-white text-gray-700 rounded-full font-medium hover:bg-green-100 transition-colors">Equipment</button>
+                <button className="px-4 py-2 bg-white text-gray-700 rounded-full font-medium hover:bg-green-100 transition-colors">Techniques</button>
+              </div>
             </div>
-          ) : posts.length > 0 ? (
-            <>
-              {posts.map((post) => (
-                <div 
-                  key={post._id} 
-                  ref={el => postRefs.current[post._id] = el}
-                  data-postid={post._id}
-                  className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition-all duration-200 overflow-hidden shadow-sm hover:shadow-md"
-                >
-                  <div className="flex items-center justify-between p-4 border-b border-gray-100">
+
+            {/* Create Post Button - moved from original position */}
+            <div className="flex justify-end mb-4">
+              <button
+                onClick={() => setCreatePostModal(true)}
+                className="hidden md:flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-full font-medium transition-colors duration-200"
+              >
+                <FaPlus className="mr-2" size={14} />
+                Create Post
+              </button>
+            </div>
+            
+            {/* Posts feed - keep the existing code */}
+            <div className="space-y-4">
+              {loading && posts.length === 0 ? (
+                <div className="flex justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+                </div>
+              ) : posts.length > 0 ? (
+                <>
+                  {posts.map((post) => (
                     <div 
-                      className="flex items-center space-x-3 cursor-pointer"
-                      onClick={() => navigate(`/post/${post._id}`)}
+                      key={post._id} 
+                      ref={el => postRefs.current[post._id] = el}
+                      data-postid={post._id}
+                      className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition-all duration-200 overflow-hidden shadow-sm hover:shadow-md"
                     >
-                      <img 
-                        src={post.user?.avatar || '/default-avatar.png'} 
-                        alt={post.user?.username}
-                        className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-100"
-                      />
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{post.user?.fullname || post.user?.username}</h3>
-                        <p className="text-sm text-gray-500">
-                          {post.createdAt && formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {/* Delete button - only show for post owner */}
-                    {user && post.user && user._id === post.user._id && (
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent navigation when clicking delete
-                          handleDeletePost(post._id);
-                        }} 
-                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
-                        title="Delete post"
-                      >
-                        <FaTrash size={14} />
-                      </button>
-                    )}
-                  </div>
-                  
-                  {/* Post content - make it clickable */}
-                  <div 
-                    className="p-4 cursor-pointer"
-                    onClick={() => navigate(`/post/${post._id}`)}
-                  >
-                    <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">{post.content}</p>
-                    
-                    {post.image && (
-                      <div className="mt-4 rounded-lg overflow-hidden">
-                        <img 
-                          src={post.image} 
-                          alt="Post attachment" 
-                          className="w-full h-auto max-h-96 object-contain bg-gray-50"
-                          onError={(e) => {
-                            console.error("Image failed to load:", e);
-                            e.target.style.display = 'none';
-                          }}
-                        />
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Post stats */}
-                  <div className="px-4 py-2 bg-gray-50 text-sm text-gray-600 flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <span className="flex items-center">
-                        <FaHeart className="mr-1 text-red-500" size={12} />
-                        {post.likes?.length || 0}
-                      </span>
-                      <span className="flex items-center">
-                        <FaComment className="mr-1 text-blue-500" size={12} />
-                        {post.comments?.length || 0}
-                      </span>
-                    </div>
-                    <span className="flex items-center text-gray-500">
-                      <FaEye className="mr-1" size={12} />
-                      {post.viewCount || 0} views
-                    </span>
-                  </div>
-                  
-                  {/* Post actions */}
-                  <div className="flex border-t border-gray-100">
-                    <button 
-                      onClick={() => handleToggleLike(post._id)}
-                      className={`flex-1 py-3 flex justify-center items-center hover:bg-gray-50 transition-colors ${
-                        isPostLikedByUser(post) ? 'text-red-500' : 'text-gray-600'
-                      }`}
-                    >
-                      {isPostLikedByUser(post) ? (
-                        <FaHeart className="mr-2" size={16} />
-                      ) : (
-                        <FaRegHeart className="mr-2" size={16} />
-                      )}
-                      <span className="font-medium">{isPostLikedByUser(post) ? 'Liked' : 'Like'}</span>
-                    </button>
-                    
-                    <button 
-                      onClick={() => setCommentingOnPost(post._id === commentingOnPost ? null : post._id)}
-                      className="flex-1 py-3 flex justify-center items-center hover:bg-gray-50 text-gray-600 transition-colors border-l border-r border-gray-100"
-                    >
-                      <FaComment className="mr-2" size={16} />
-                      <span className="font-medium">Comment</span>
-                    </button>
-                    
-                    <button 
-                      onClick={() => handleSharePost(post)} 
-                      className="flex-1 py-3 flex justify-center items-center hover:bg-gray-50 text-gray-600 transition-colors"
-                    >
-                      <FaShare className="mr-2" size={16} />
-                      <span className="font-medium">Share</span>
-                    </button>
-                  </div>
-                  
-                  {/* Comments section */}
-                  {post.comments?.length > 0 && (
-                    <div className="bg-gray-50 border-t border-gray-100">
-                      <div className="p-4">
-                        <div className="space-y-3">
-                          {post.comments.slice(0, 3).map((comment, index) => (
-                            <div key={index} className="flex space-x-3">
-                              <img 
-                                src={comment.user?.avatar || '/default-avatar.png'} 
-                                alt={comment.user?.username || 'User'}
-                                className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                                onError={(e) => {
-                                  e.target.src = '/default-avatar.png';
-                                  e.target.onerror = null;
-                                }}
-                              />
-                              <div className="bg-white rounded-lg p-3 flex-1 shadow-sm">
-                                <div className="font-medium text-gray-900 text-sm">{comment.user?.username}</div>
-                                <p className="text-gray-700 mt-1">{comment.content}</p>
-                              </div>
-                            </div>
-                          ))}
-                          
-                          {post.comments.length > 3 && (
-                            <Link 
-                              to={`/post/${post._id}`} 
-                              className="block text-center text-green-600 hover:text-green-700 font-medium py-2"
-                            >
-                              View all {post.comments.length} comments
-                            </Link>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Comment form */}
-                  {commentingOnPost === post._id && (
-                    <div className="p-4 bg-gray-50 border-t border-gray-100">
-                      <form onSubmit={handleSubmit(data => handleAddComment(data, post._id))}>
-                        <div className="flex space-x-3">
+                      <div className="flex items-center justify-between p-4 border-b border-gray-100">
+                        <div 
+                          className="flex items-center space-x-3 cursor-pointer"
+                          onClick={() => navigate(`/post/${post._id}`)}
+                        >
                           <img 
-                            src={user?.avatar || '/default-avatar.png'} 
-                            alt={user?.username} 
-                            className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                            src={post.user?.avatar || '/default-avatar.png'} 
+                            alt={post.user?.username}
+                            className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-100"
                           />
-                          <div className="flex-1">
-                            <textarea
-                              {...register('commentContent', { required: true })}
-                              className="w-full border border-gray-200 rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                              placeholder="Write a comment..."
-                              rows={3}
+                          <div>
+                            <h3 className="font-semibold text-gray-900">{post.user?.fullname || post.user?.username}</h3>
+                            <p className="text-sm text-gray-500">
+                              {post.createdAt && formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {/* Delete button - only show for post owner */}
+                        {user && post.user && user._id === post.user._id && (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation(); // Prevent navigation when clicking delete
+                              handleDeletePost(post._id);
+                            }} 
+                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                            title="Delete post"
+                          >
+                            <FaTrash size={14} />
+                          </button>
+                        )}
+                      </div>
+                      
+                      {/* Post content - make it clickable */}
+                      <div 
+                        className="p-4 cursor-pointer"
+                        onClick={() => navigate(`/post/${post._id}`)}
+                      >
+                        <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">{post.content}</p>
+                        
+                        {post.image && (
+                          <div className="mt-4 rounded-lg overflow-hidden">
+                            <img 
+                              src={post.image} 
+                              alt="Post attachment" 
+                              className="w-full h-auto max-h-96 object-contain bg-gray-50"
+                              onError={(e) => {
+                                console.error("Image failed to load:", e);
+                                e.target.style.display = 'none';
+                              }}
                             />
-                            <div className="flex justify-end space-x-2 mt-3">
-                              <button
-                                type="button"
-                                onClick={() => setCommentingOnPost(null)}
-                                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors"
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                type="submit"
-                                className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
-                              >
-                                Comment
-                              </button>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Post stats */}
+                      <div className="px-4 py-2 bg-gray-50 text-sm text-gray-600 flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <span className="flex items-center">
+                            <FaHeart className="mr-1 text-red-500" size={12} />
+                            {post.likes?.length || 0}
+                          </span>
+                          <span className="flex items-center">
+                            <FaComment className="mr-1 text-blue-500" size={12} />
+                            {post.comments?.length || 0}
+                          </span>
+                        </div>
+                        <span className="flex items-center text-gray-500">
+                          <FaEye className="mr-1" size={12} />
+                          {post.viewCount || 0} views
+                        </span>
+                      </div>
+                      
+                      {/* Post actions */}
+                      <div className="flex border-t border-gray-100">
+                        <button 
+                          onClick={() => handleToggleLike(post._id)}
+                          className={`flex-1 py-3 flex justify-center items-center hover:bg-gray-50 transition-colors ${
+                            isPostLikedByUser(post) ? 'text-red-500' : 'text-gray-600'
+                          }`}
+                        >
+                          {isPostLikedByUser(post) ? (
+                            <FaHeart className="mr-2" size={16} />
+                          ) : (
+                            <FaRegHeart className="mr-2" size={16} />
+                          )}
+                          <span className="font-medium">{isPostLikedByUser(post) ? 'Liked' : 'Like'}</span>
+                        </button>
+                        
+                        <button 
+                          onClick={() => setCommentingOnPost(post._id === commentingOnPost ? null : post._id)}
+                          className="flex-1 py-3 flex justify-center items-center hover:bg-gray-50 text-gray-600 transition-colors border-l border-r border-gray-100"
+                        >
+                          <FaComment className="mr-2" size={16} />
+                          <span className="font-medium">Comment</span>
+                        </button>
+                        
+                        <button 
+                          onClick={() => handleSharePost(post)} 
+                          className="flex-1 py-3 flex justify-center items-center hover:bg-gray-50 text-gray-600 transition-colors"
+                        >
+                          <FaShare className="mr-2" size={16} />
+                          <span className="font-medium">Share</span>
+                        </button>
+                      </div>
+                      
+                      {/* Comments section */}
+                      {post.comments?.length > 0 && (
+                        <div className="bg-gray-50 border-t border-gray-100">
+                          <div className="p-4">
+                            <div className="space-y-3">
+                              {post.comments.slice(0, 3).map((comment, index) => (
+                                <div key={index} className="flex space-x-3">
+                                  <img 
+                                    src={comment.user?.avatar || '/default-avatar.png'} 
+                                    alt={comment.user?.username || 'User'}
+                                    className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                                    onError={(e) => {
+                                      e.target.src = '/default-avatar.png';
+                                      e.target.onerror = null;
+                                    }}
+                                  />
+                                  <div className="bg-white rounded-lg p-3 flex-1 shadow-sm">
+                                    <div className="font-medium text-gray-900 text-sm">{comment.user?.username}</div>
+                                    <p className="text-gray-700 mt-1">{comment.content}</p>
+                                  </div>
+                                </div>
+                              ))}
+                              
+                              {post.comments.length > 3 && (
+                                <Link 
+                                  to={`/post/${post._id}`} 
+                                  className="block text-center text-green-600 hover:text-green-700 font-medium py-2"
+                                >
+                                  View all {post.comments.length} comments
+                                </Link>
+                              )}
                             </div>
                           </div>
                         </div>
-                      </form>
+                      )}
+                      
+                      {/* Comment form */}
+                      {commentingOnPost === post._id && (
+                        <div className="p-4 bg-gray-50 border-t border-gray-100">
+                          <form onSubmit={handleSubmit(data => handleAddComment(data, post._id))}>
+                            <div className="flex space-x-3">
+                              <img 
+                                src={user?.avatar || '/default-avatar.png'} 
+                                alt={user?.username} 
+                                className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                              />
+                              <div className="flex-1">
+                                <textarea
+                                  {...register('commentContent', { required: true })}
+                                  className="w-full border border-gray-200 rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                  placeholder="Write a comment..."
+                                  rows={3}
+                                />
+                                <div className="flex justify-end space-x-2 mt-3">
+                                  <button
+                                    type="button"
+                                    onClick={() => setCommentingOnPost(null)}
+                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    type="submit"
+                                    className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                                  >
+                                    Comment
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  
+                  {/* Load more button */}
+                  {hasMore && (
+                    <div className="flex justify-center py-8">
+                      <button
+                        onClick={handleLoadMore}
+                        className="px-8 py-3 bg-white border border-gray-200 hover:border-green-500 hover:bg-green-50 text-gray-700 hover:text-green-700 rounded-full font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <div className="flex items-center">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600 mr-2"></div>
+                            Loading...
+                          </div>
+                        ) : (
+                          'Load More Posts'
+                        )}
+                      </button>
                     </div>
                   )}
-                </div>
-              ))}
-              
-              {/* Load more button */}
-              {hasMore && (
-                <div className="flex justify-center py-8">
-                  <button
-                    onClick={handleLoadMore}
-                    className="px-8 py-3 bg-white border border-gray-200 hover:border-green-500 hover:bg-green-50 text-gray-700 hover:text-green-700 rounded-full font-medium transition-all duration-200 shadow-sm hover:shadow-md"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600 mr-2"></div>
-                        Loading...
-                      </div>
-                    ) : (
-                      'Load More Posts'
-                    )}
-                  </button>
+                </>
+              ) : (
+                <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
+                  <div className="max-w-md mx-auto">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <FaComment className="text-green-600" size={24} />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">No posts yet</h3>
+                    <p className="text-gray-600 mb-6">Be the first to share something with the community!</p>
+                    <button
+                      onClick={() => setCreatePostModal(true)}
+                      className="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-full font-medium transition-colors"
+                    >
+                      <FaPlus className="mr-2" size={16} />
+                      Create First Post
+                    </button>
+                  </div>
                 </div>
               )}
-            </>
-          ) : (
-            <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
-              <div className="max-w-md mx-auto">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FaComment className="text-green-600" size={24} />
+            </div>
+          </div>
+          
+          {/* Right sidebar - Additional features (30% width on large screens) */}
+          <div className="lg:w-[30%] space-y-6 mt-6 lg:mt-0">
+            {/* Community Groups Feature - Coming Soon */}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0">
+                <div className="bg-blue-500 text-white text-xs px-3 py-1 rotate-45 translate-y-2 translate-x-6">
+                  Coming Soon
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No posts yet</h3>
-                <p className="text-gray-600 mb-6">Be the first to share something with the community!</p>
-                <button
-                  onClick={() => setCreatePostModal(true)}
-                  className="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-full font-medium transition-colors"
-                >
-                  <FaPlus className="mr-2" size={16} />
-                  Create First Post
+              </div>
+              <div className="flex items-center mb-3">
+                <div className="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center mr-3">
+                  <FaUsers className="text-blue-600" size={18} />
+                </div>
+                <h3 className="font-semibold text-gray-900">Community Groups</h3>
+              </div>
+              <p className="text-sm text-gray-700 mb-3">
+                Join specialized farming communities based on your interests. Connect with like-minded farmers, share knowledge, and participate in discussions.
+              </p>
+              <div className="bg-white rounded-lg p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-2">
+                      <FaSeedling className="text-green-600" size={14} />
+                    </div>
+                    <span className="font-medium text-sm">Organic Farmers</span>
+                  </div>
+                  <span className="text-xs text-gray-500">3.2k members</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center mr-2">
+                      <FaLeaf className="text-amber-600" size={14} />  {/* Replace FaWheat with FaLeaf */}
+                    </div>
+                    <span className="font-medium text-sm">Grain Producers</span>
+                  </div>
+                  <span className="text-xs text-gray-500">2.7k members</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Existing Marketplace section */}
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200 p-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0">
+                <div className="bg-green-500 text-white text-xs px-3 py-1 rotate-45 translate-y-2 translate-x-6">
+                  Coming Soon
+                </div>
+              </div>
+              <div className="flex items-center mb-3">
+                <div className="bg-green-100 w-10 h-10 rounded-full flex items-center justify-center mr-3">
+                  <FaStore className="text-green-600" size={18} />
+                </div>
+                <h3 className="font-semibold text-gray-900">Farmer's Marketplace</h3>
+              </div>
+              <p className="text-sm text-gray-700 mb-3">
+                Compare prices and buy farming equipment, seeds, and supplies from trusted vendors. Get the best deals!
+              </p>
+              <div className="flex justify-between items-center text-sm bg-white p-3 rounded-lg">
+                <span>Market Price Updates</span>
+                <span className="text-green-600 font-medium">Coming Soon</span>
+              </div>
+            </div>
+            
+            {/* Events Calendar */}
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+                <FaCalendarAlt className="mr-2 text-green-600" size={16} />
+                Upcoming Events
+              </h3>
+              <div className="space-y-3">
+                <div className="border-l-4 border-green-500 pl-3">
+                  <p className="font-medium">Organic Farming Workshop</p>
+                  <p className="text-sm text-gray-600">June 5 • Agricultural College</p>
+                  <div className="flex items-center mt-1 text-xs">
+                    <span className="text-green-600 bg-green-100 px-2 py-0.5 rounded-full">Workshop</span>
+                  </div>
+                </div>
+                <div className="border-l-4 border-blue-500 pl-3">
+                  <p className="font-medium">Farmer's Market</p>
+                  <p className="text-sm text-gray-600">June 12 • Town Square</p>
+                  <div className="flex items-center mt-1 text-xs">
+                    <span className="text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">Market</span>
+                  </div>
+                </div>
+                <div className="border-l-4 border-amber-500 pl-3">
+                  <p className="font-medium">Crop Insurance Seminar</p>
+                  <p className="text-sm text-gray-600">June 18 • Community Hall</p>
+                  <div className="flex items-center mt-1 text-xs">
+                    <span className="text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">Seminar</span>
+                  </div>
+                </div>
+                <button className="w-full mt-2 text-center text-green-600 hover:text-green-700 text-sm font-medium py-2 hover:bg-green-50 rounded-lg transition-colors">
+                  View All Events
                 </button>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
       
