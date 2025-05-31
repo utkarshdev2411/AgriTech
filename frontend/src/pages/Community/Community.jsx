@@ -18,6 +18,8 @@ const Community = () => {
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [sharingPost, setSharingPost] = useState(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState(null);
   const postRefs = useRef({});
   
   const posts = useSelector(state => state.post.posts);
@@ -128,13 +130,19 @@ const Community = () => {
     }
   };
   
-  const handleDeletePost = async (postId) => {
+  const handleDeletePost = (postId) => {
+    setPostToDelete(postId);
+    setDeleteModalOpen(true);
+  };
+
+  // Add a new function to perform the actual deletion
+  const confirmDeletePost = async () => {
     try {
-      if (window.confirm("Are you sure you want to delete this post? This action cannot be undone.")) {
-        const result = await dispatch(deletePost(postId));
-        if (!result.error) {
-          toast.success("Post deleted successfully");
-        }
+      const result = await dispatch(deletePost(postToDelete));
+      if (!result.error) {
+        toast.success("Post deleted successfully");
+        setDeleteModalOpen(false);
+        setPostToDelete(null);
       }
     } catch (error) {
       toast.error("Failed to delete post");
@@ -214,27 +222,27 @@ const Community = () => {
     return post.likes.some(like => like._id === user._id);
   };
 
-  // Scroll to top button
+  // Scroll to top button - positioned on the right
   const ScrollToTopButton = () => (
     showScrollTop && (
       <button
         onClick={scrollToTop}
-        className="fixed bottom-24 right-6 bg-gray-700 hover:bg-gray-800 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 z-40"
+        className="fixed bottom-6 right-6 bg-gray-500 hover:bg-gray-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 z-40"
         aria-label="Scroll to top"
       >
-        <FaArrowUp size={16} />
+        <FaArrowUp size={18} />
       </button>
     )
   );
 
-  // Floating create button
+  // Floating create button - positioned to the left of the scroll button
   const FloatingCreateButton = () => (
     <button
       onClick={() => setCreatePostModal(true)}
-      className="fixed bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 z-40 md:hidden"
+      className="fixed bottom-6 right-24 bg-green-600 hover:bg-green-700 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 z-40"
       aria-label="Create new post"
     >
-      <FaPlus size={24} />
+      <FaPlus size={20} />
     </button>
   );
 
@@ -243,6 +251,48 @@ const Community = () => {
     setSharingPost(post);
     setShareModalOpen(true);
   };
+
+  // Delete confirmation modal
+  const DeleteConfirmationModal = () => (
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4"
+      style={{ zIndex: 99999 }}
+    >
+      <div 
+        className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden"
+        style={{ zIndex: 100000 }}
+      >
+        <div className="p-6">
+          <div className="flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+              <FaTrash className="text-red-500" size={24} />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Post</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this post? This action cannot be undone.
+            </p>
+            <div className="flex space-x-4 w-full">
+              <button
+                onClick={() => {
+                  setDeleteModalOpen(false);
+                  setPostToDelete(null);
+                }}
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeletePost}
+                className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -621,6 +671,9 @@ const Community = () => {
           title={sharingPost.content?.substring(0, 50)}
         />
       )}
+      
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && <DeleteConfirmationModal />}
     </div>
   );
 };
