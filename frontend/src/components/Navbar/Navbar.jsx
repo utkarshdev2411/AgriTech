@@ -41,7 +41,7 @@ const Navbar = () => {
     <nav className={`fixed top-0 left-0 right-0 z-50 w-full ${
       scrolled 
         ? 'bg-white shadow-lg py-3' 
-        : 'bg-gradient-to-r from-white/95 via-white/90 to-white/95 backdrop-blur-md py-5'
+        : 'bg-white py-5'
     } transition-all duration-300`}>
       <div className="container mx-auto px-4 md:px-6 flex justify-between items-center">
         <Link to={'/'} className="flex items-center group">

@@ -245,18 +245,20 @@ const Community = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20 md:pt-24" >
-     
-       <button
-              onClick={() => setCreatePostModal(true)}
-              className="hidden md:flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-full font-medium transition-colors duration-200"
-            >
-              <FaPlus className="mr-2" size={14} />
-              Create Post
-            </button>
-
+    <div className="min-h-screen bg-gray-50">
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 py-6">
+      <div className="max-w-4xl mx-auto px-4 pt-20 md:pt-24">
+        {/* Button Container - properly aligned */}
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={() => setCreatePostModal(true)}
+            className="hidden md:flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-full font-medium transition-colors duration-200"
+          >
+            <FaPlus className="mr-2" size={14} />
+            Create Post
+          </button>
+        </div>
+        
         {/* Posts feed */}
         <div className="space-y-4">
           {loading && posts.length === 0 ? (
