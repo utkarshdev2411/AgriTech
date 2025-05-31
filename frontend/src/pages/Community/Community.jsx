@@ -6,6 +6,7 @@ import { createPost, getPosts, toggleLike, addComment, deletePost, incrementPost
 import { FaHeart, FaRegHeart, FaComment, FaEye, FaShare, FaTrash, FaPlus } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
+import ShareModal from '../../components/ShareModal';
 
 const Community = () => {
   const { register, handleSubmit, reset, watch } = useForm();
@@ -15,6 +16,8 @@ const Community = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [sharingPost, setSharingPost] = useState(null);
   const postRefs = useRef({});
   const posts = useSelector(state => state.post.posts);
   const loading = useSelector(state => state.post.loading);
@@ -211,6 +214,12 @@ const Community = () => {
     </button>
   );
 
+  // Add a function to handle sharing
+  const handleSharePost = (post) => {
+    setSharingPost(post);
+    setShareModalOpen(true);
+  };
+
   return (
     <div className="container mx-auto px-4 pt-24 pb-20 relative min-h-screen">
       {/* Simple header with Create Post button */}
@@ -376,7 +385,10 @@ const Community = () => {
                     <span>Comment</span>
                   </button>
                   
-                  <button className="flex-1 py-3 flex justify-center items-center hover:bg-gray-50">
+                  <button 
+                    onClick={() => handleSharePost(post)} 
+                    className="flex-1 py-3 flex justify-center items-center hover:bg-gray-50"
+                  >
                     <FaShare className="mr-2 text-gray-500" />
                     <span>Share</span>
                   </button>
@@ -480,6 +492,16 @@ const Community = () => {
       
       {/* Floating button */}
       <FloatingCreateButton />
+      
+      {/* Add the ShareModal component */}
+      {sharingPost && (
+        <ShareModal 
+          isOpen={shareModalOpen} 
+          onClose={() => setShareModalOpen(false)}
+          postId={sharingPost._id}
+          title={sharingPost.content?.substring(0, 50)} // Use first 50 chars as title
+        />
+      )}
     </div>
   );
 };

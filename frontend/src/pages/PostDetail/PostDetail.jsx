@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { FaHeart, FaRegHeart, FaComment, FaEye, FaShare, FaArrowLeft } from 'react-icons/fa';
 import { formatDistanceToNow } from 'date-fns';
+import ShareModal from '../../components/ShareModal';
 
 const PostDetail = () => {
   const { postId } = useParams();
@@ -16,6 +17,7 @@ const PostDetail = () => {
   const currentPost = useSelector(state => state.post.currentPost);
   const loading = useSelector(state => state.post.loading);
   const user = useSelector(state => state.user.userInfo);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
   
   useEffect(() => {
     if (postId) {
@@ -187,7 +189,10 @@ const PostDetail = () => {
             <span>Comment</span>
           </button>
           
-          <button className="flex-1 py-3 flex justify-center items-center hover:bg-gray-50">
+          <button 
+            onClick={() => setShareModalOpen(true)}
+            className="flex-1 py-3 flex justify-center items-center hover:bg-gray-50"
+          >
             <FaShare className="mr-2 text-gray-500" />
             <span>Share</span>
           </button>
@@ -224,6 +229,16 @@ const PostDetail = () => {
           </form>
         </div>
       </div>
+      
+      {/* Add the ShareModal component */}
+      {currentPost && (
+        <ShareModal 
+          isOpen={shareModalOpen} 
+          onClose={() => setShareModalOpen(false)}
+          postId={currentPost._id}
+          title={currentPost.content?.substring(0, 50)} // Use first 50 chars as title
+        />
+      )}
       
       {/* Comments section */}
       <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
