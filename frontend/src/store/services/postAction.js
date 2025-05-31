@@ -3,14 +3,21 @@ import axios from "axios";
 
 const API_BASE_URL = "http://localhost:8000";
 
+// Update the getPosts action to support pagination
 const getPosts = createAsyncThunk(
-  "post/getposts",
-  async (_, { rejectWithValue }) => {
+  "post/getPosts",
+  async ({ page = 1, limit = 10 }, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/post`, {
-        withCredentials: true
-      });
-      return response.data;
+      const response = await axios.get(
+        `${API_BASE_URL}/post?page=${page}&limit=${limit}`,
+        { withCredentials: true }
+      );
+      
+      return {
+        posts: response.data,
+        page,
+        hasMore: response.data.length === limit // If we got fewer posts than requested, there are no more
+      };
     } catch (error) {
       return rejectWithValue(error.message);
     }

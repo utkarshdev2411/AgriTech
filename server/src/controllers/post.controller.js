@@ -42,12 +42,26 @@ export const createPost = async (req, res) => {
 // Get all posts
 export const getPosts = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    
     const posts = await postModel.find({})
       .populate("user", "username fullname avatar email")
       .populate("likes", "username avatar")
-      .populate("comments.user", "username fullname avatar") // Add this line
-      .sort({ createdAt: -1 });
+      .populate("comments.user", "username fullname avatar")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
     
+    // Add pagination metadata as response headers instead of changing response body
+    const total = await postModel.countDocuments();
+    res.set('X-Total-Posts', total);
+    res.set('X-Current-Page', page);
+    res.set('X-Total-Pages', Math.ceil(total / limit));
+    res.set('X-Has-More', (page < Math.ceil(total / limit)).toString());
+    
+    // Return just the posts array to maintain compatibility
     return res.status(StatusCodes.OK).json(posts);
   } catch (error) {
     return res.status(StatusCodes.BAD_REQUEST).json(

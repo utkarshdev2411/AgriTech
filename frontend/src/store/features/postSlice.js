@@ -15,7 +15,9 @@ const initialState = {
   posts: [],
   currentPost: null,
   loading: false,
-  error: null
+  error: null,
+  hasMore: true, // New field to track if more posts can be loaded
+  currentPage: 1  // Track the current page
 };
 
 const postSlice = createSlice({
@@ -38,7 +40,17 @@ const postSlice = createSlice({
       })
       .addCase(getPosts.fulfilled, (state, action) => {
         state.loading = false;
-        state.posts = action.payload;
+        
+        // If it's the first page, replace posts array
+        // If loading more (page > 1), append to existing posts
+        if (action.payload.page === 1) {
+          state.posts = action.payload.posts;
+        } else {
+          state.posts = [...state.posts, ...action.payload.posts];
+        }
+        
+        state.hasMore = action.payload.hasMore;
+        state.currentPage = action.payload.page;
         state.status = true;
       })
       .addCase(getPosts.rejected, (state, action) => {
