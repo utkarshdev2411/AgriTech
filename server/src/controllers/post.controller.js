@@ -9,8 +9,12 @@ import { uploadToGridFS } from "../utils/fileStorage.js";
 // Create post
 export const createPost = async (req, res) => {
  try {
-    const { _id, content } = req.body;
-    const postData = { user: _id, content };
+    const { _id, content, topics } = req.body;
+    const postData = { 
+      user: _id, 
+      content,
+      topics: topics || ['All Posts'] // Default to 'All Posts' if no topics provided
+    };
     
     // Handle image upload if present
     if (req.file) {
@@ -44,9 +48,16 @@ export const getPosts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
+    const topic = req.query.topic;
     const skip = (page - 1) * limit;
     
-    const posts = await postModel.find({})
+    // Build the query based on the topic parameter
+    const query = {};
+    if (topic && topic !== 'All Posts') {
+      query.topics = topic;
+    }
+    
+    const posts = await postModel.find(query)
       .populate("user", "username fullname avatar email")
       .populate("likes", "username avatar")
       .populate("comments.user", "username fullname avatar")
@@ -54,8 +65,8 @@ export const getPosts = async (req, res) => {
       .skip(skip)
       .limit(limit);
     
-    // Add pagination metadata as response headers instead of changing response body
-    const total = await postModel.countDocuments();
+    // Add pagination metadata as response headers
+    const total = await postModel.countDocuments(query);
     res.set('X-Total-Posts', total);
     res.set('X-Current-Page', page);
     res.set('X-Total-Pages', Math.ceil(total / limit));

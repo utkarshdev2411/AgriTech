@@ -17,7 +17,8 @@ const initialState = {
   loading: false,
   error: null,
   hasMore: true, // New field to track if more posts can be loaded
-  currentPage: 1  // Track the current page
+  currentPage: 1,  // Track the current page
+  currentTopic: 'All Posts'  // Default topic is "All Posts"
 };
 
 const postSlice = createSlice({
@@ -29,6 +30,10 @@ const postSlice = createSlice({
     },
     updateCurrentPost: (state, action) => {
       state.currentPost = action.payload;
+    },
+    setCurrentTopic: (state, action) => {
+      state.currentTopic = action.payload;
+      state.currentPage = 1; // Reset to page 1 when changing topics
     }
   },
   extraReducers: (builder) => {
@@ -41,12 +46,17 @@ const postSlice = createSlice({
       .addCase(getPosts.fulfilled, (state, action) => {
         state.loading = false;
         
-        // If it's the first page, replace posts array
-        // If loading more (page > 1), append to existing posts
+        // If it's the first page or if the topic has changed, replace posts array
+        // Otherwise append to existing posts
         if (action.payload.page === 1) {
           state.posts = action.payload.posts;
         } else {
           state.posts = [...state.posts, ...action.payload.posts];
+        }
+        
+        // Store the topic if provided
+        if (action.payload.topic) {
+          state.currentTopic = action.payload.topic;
         }
         
         state.hasMore = action.payload.hasMore;
@@ -300,5 +310,5 @@ const postSlice = createSlice({
   }
 });
 
-export const { clearCurrentPost, updateCurrentPost } = postSlice.actions;
+export const { clearCurrentPost, updateCurrentPost, setCurrentTopic } = postSlice.actions;
 export default postSlice.reducer;

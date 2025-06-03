@@ -3,20 +3,24 @@ import axios from "axios";
 
 const API_BASE_URL = "http://localhost:8000";
 
-// Update the getPosts action to support pagination
+// Update the getPosts action to support topic filtering
 const getPosts = createAsyncThunk(
   "post/getPosts",
-  async ({ page = 1, limit = 10 }, { rejectWithValue }) => {
+  async ({ page = 1, limit = 10, topic = null }, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        `${API_BASE_URL}/post?page=${page}&limit=${limit}`,
-        { withCredentials: true }
-      );
+      // Add topic to the query parameters if it exists and isn't "All Posts"
+      let url = `${API_BASE_URL}/post?page=${page}&limit=${limit}`;
+      if (topic && topic !== 'All Posts') {
+        url += `&topic=${encodeURIComponent(topic)}`;
+      }
+      
+      const response = await axios.get(url, { withCredentials: true });
       
       return {
         posts: response.data,
         page,
-        hasMore: response.data.length === limit // If we got fewer posts than requested, there are no more
+        hasMore: response.data.length === limit,
+        topic
       };
     } catch (error) {
       return rejectWithValue(error.message);
@@ -43,6 +47,7 @@ const getPostById = createAsyncThunk(
   }
 );
 
+// Update the createPost action to handle topics
 const createPost = createAsyncThunk(
   "post/createpost",
   async (data, { rejectWithValue }) => {
@@ -50,6 +55,13 @@ const createPost = createAsyncThunk(
       const formData = new FormData();
       formData.append("content", data.content);
       formData.append("_id", data._id);
+      
+      // Add topics to formData
+      if (data.topics && data.topics.length > 0) {
+        data.topics.forEach(topic => {
+          formData.append("topics[]", topic);
+        });
+      }
       
       // If image is provided, append to formData
       if (data.image) {

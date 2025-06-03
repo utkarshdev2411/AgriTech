@@ -25,6 +25,10 @@ const postSchema = new mongoose.Schema({
   image: {
     type: String, // URL to the uploaded image
   },
+  topics: [{
+    type: String,
+    enum: ['All Posts', 'Crops', 'Pest Control', 'Equipment', 'Techniques', 'Other']
+  }],
   likes: [
     {
       type: mongoose.Schema.Types.ObjectId,

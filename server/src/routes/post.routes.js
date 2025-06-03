@@ -10,6 +10,7 @@ import {
   incrementView
 } from '../controllers/post.controller.js';
 import { verifyJWT } from '../middlewares/auth.middleware.js';
+import { upload } from '../middlewares/multer.middleware.js';
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ router.post('/:postId/view', incrementView); // This should be public
 
 // Protected routes (auth required)
 router.use(verifyJWT); // Apply auth middleware to routes below
-router.post('/create', createPost);
+router.post('/create', upload.single('image'), createPost);
 router.post('/:postId/like', toggleLike);
 router.post('/:postId/comment', addComment);
 router.get('/:postId/comments', getComments);
