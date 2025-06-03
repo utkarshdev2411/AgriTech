@@ -29,8 +29,8 @@ const Community = () => {
   const [postToDelete, setPostToDelete] = useState(null);
   const postRefs = useRef({});
   
-  // New state for selected topics in post creation
-  const [selectedTopics, setSelectedTopics] = useState(['All Posts']);
+  // Modified to remove "All Posts" from initial selection
+  const [selectedTopics, setSelectedTopics] = useState([]);
   
   // Get state from Redux
   const posts = useSelector(state => state.post.posts);
@@ -39,8 +39,11 @@ const Community = () => {
   const user = useSelector(state => state.user.userInfo);
   const currentTopic = useSelector(state => state.post.currentTopic);
 
-  // Available topics list
+  // Available topics list for viewing posts (keep "All Posts" here)
   const topicsList = ['All Posts', 'Crops', 'Pest Control', 'Equipment', 'Techniques'];
+  
+  // Topics available for selection when creating posts (remove "All Posts")
+  const creationTopicsList = ['Crops', 'Pest Control', 'Equipment', 'Techniques'];
 
   // Watch the image file input to show preview
   const selectedImage = watch("image");
@@ -79,11 +82,17 @@ const Community = () => {
     }
   }, [dispatch, page, currentTopic]);
 
-  // Modified createPost handler to include topics
+  // Modified createPost handler to validate topics
   const handleCreatePost = async (data) => {
     try {
       if (!user) {
         toast.warning("Please login to create a post");
+        return;
+      }
+      
+      // Require at least one topic
+      if (selectedTopics.length === 0) {
+        toast.warning("Please select at least one topic");
         return;
       }
       
@@ -98,7 +107,7 @@ const Community = () => {
         toast.success("Post created successfully");
         setCreatePostModal(false);
         setImagePreview(null);
-        setSelectedTopics(['All Posts']); // Reset selected topics
+        setSelectedTopics([]); // Reset to empty array
         reset({ content: "", image: "" });
         // Refresh posts by fetching page 1 with current topic
         setPage(1);
@@ -110,33 +119,18 @@ const Community = () => {
     }
   };
 
-  // Topic selection handlers
-  const handleTopicClick = (topic) => {
-    dispatch(setCurrentTopic(topic));
-  };
-
+  // Simplified topic selection handler that properly supports multiple selection
   const handleTopicSelectionInModal = (topic) => {
-    if (topic === 'All Posts') {
-      // If "All Posts" is selected, clear other selections
-      setSelectedTopics(['All Posts']);
-    } else {
-      // If any other topic is selected, remove "All Posts" from selection
-      setSelectedTopics(prev => {
-        const newSelection = prev.filter(t => t !== 'All Posts');
-        
-        // Toggle the selected topic
-        if (newSelection.includes(topic)) {
-          return newSelection.filter(t => t !== topic);
-        } else {
-          return [...newSelection, topic];
-        }
-      });
-
-      // If no topics are selected, add "All Posts" back
-      if (selectedTopics.length === 0 || (selectedTopics.length === 1 && selectedTopics[0] === topic)) {
-        setSelectedTopics(['All Posts']);
+    setSelectedTopics(prev => {
+      // If topic is already selected, remove it
+      if (prev.includes(topic)) {
+        return prev.filter(t => t !== topic);
+      } 
+      // Otherwise add it
+      else {
+        return [...prev, topic];
       }
-    }
+    });
   };
 
   const scrollToTop = () => {
@@ -347,6 +341,15 @@ const Community = () => {
       {topic}
     </span>
   );
+
+  // Modified handleTopicClick function to properly filter posts
+  const handleTopicClick = (topic) => {
+    // Reset page to 1 when changing topics
+    setPage(1);
+    
+    // Update the current topic in Redux store
+    dispatch(setCurrentTopic(topic));
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -761,7 +764,7 @@ const Community = () => {
                 onClick={() => {
                   setCreatePostModal(false);
                   setImagePreview(null);
-                  setSelectedTopics(['All Posts']);
+                  setSelectedTopics([]);  // Reset to empty array
                   reset();
                 }}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -788,9 +791,12 @@ const Community = () => {
 
                 {/* Topic Selection */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Select Topics (at least one)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Select Topics <span className="text-red-500">*</span>
+                    <span className="text-gray-500 text-xs ml-2">(Select at least one topic)</span>
+                  </label>
                   <div className="flex flex-wrap gap-2">
-                    {topicsList.map(topic => (
+                    {creationTopicsList.map(topic => (
                       <button 
                         type="button"
                         key={topic} 
@@ -805,6 +811,9 @@ const Community = () => {
                       </button>
                     ))}
                   </div>
+                  {selectedTopics.length === 0 && (
+                    <p className="mt-1 text-sm text-red-500">Please select at least one topic</p>
+                  )}
                 </div>
 
                 {/* Content Input */}
@@ -864,7 +873,7 @@ const Community = () => {
                     onClick={() => {
                       setCreatePostModal(false);
                       setImagePreview(null);
-                      setSelectedTopics(['All Posts']);
+                      setSelectedTopics([]);
                       reset();
                     }}
                     className="px-6 py-2 text-gray-700 hover:bg-gray-100 rounded-full font-medium transition-colors"
