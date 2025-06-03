@@ -894,8 +894,19 @@ const Community = () => {
         </div>
       )}
       
-      {/* Share Modal - Keep as is */}
-      {/* Delete Confirmation Modal - Keep as is */}
+      {/* Share Modal */}
+      {shareModalOpen && sharingPost && (
+        <ShareModal 
+          post={sharingPost} 
+          onClose={() => {
+            setShareModalOpen(false);
+            setSharingPost(null);
+          }} 
+        />
+      )}
+      
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && <DeleteConfirmationModal />}
     </div>
   );
 };
