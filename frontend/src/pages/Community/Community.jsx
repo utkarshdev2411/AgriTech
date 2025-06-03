@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
-import { useDispatch, useSelector }  from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { createPost, getPosts, toggleLike, addComment, deletePost, incrementPostView } from '../../store/services/postAction';
 import { setCurrentTopic } from '../../store/features/postSlice';
-import { 
-  FaHeart, FaRegHeart, FaComment, FaEye, FaShare, FaTrash, FaPlus, 
+import {
+  FaHeart, FaRegHeart, FaComment, FaEye, FaShare, FaTrash, FaPlus,
   FaImage, FaTimes, FaArrowUp, FaCalendarAlt, FaStore,
   FaUsers, FaSeedling, FaLeaf, FaTags
 } from 'react-icons/fa';
@@ -14,7 +14,7 @@ import { formatDistanceToNow } from 'date-fns';
 import ShareModal from '../../components/ShareModal';
 
 const Community = () => {
-  // Existing state and hooks
+
   const { register, handleSubmit, reset, watch, setValue } = useForm();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -28,29 +28,29 @@ const Community = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
   const postRefs = useRef({});
-  
-  // Modified to remove "All Posts" from initial selection
+
+
   const [selectedTopics, setSelectedTopics] = useState([]);
-  
-  // Get state from Redux
+
+
   const posts = useSelector(state => state.post.posts);
   const loading = useSelector(state => state.post.loading);
   const hasMore = useSelector(state => state.post.hasMore);
   const user = useSelector(state => state.user.userInfo);
   const currentTopic = useSelector(state => state.post.currentTopic);
 
-  // Available topics list for viewing posts (keep "All Posts" here)
+
   const topicsList = ['All Posts', 'Crops', 'Pest Control', 'Equipment', 'Techniques'];
-  
-  // Topics available for selection when creating posts (remove "All Posts")
+
+
   const creationTopicsList = ['Crops', 'Pest Control', 'Equipment', 'Techniques'];
 
-  // Watch the image file input to show preview
+
   const selectedImage = watch("image");
 
-  // Existing useEffects
+
   useEffect(() => {
-    // Create URL for image preview when file is selected
+
     if (selectedImage && selectedImage.length > 0) {
       const fileReader = new FileReader();
       fileReader.onload = () => {
@@ -70,46 +70,46 @@ const Community = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Modified fetch posts function to include the current topic
+
   useEffect(() => {
     dispatch(getPosts({ page: 1, limit: 10, topic: currentTopic }));
   }, [dispatch, currentTopic]);
 
-  // Modified to include the current topic when loading more posts
+
   useEffect(() => {
     if (page > 1) {
       dispatch(getPosts({ page, limit: 10, topic: currentTopic }));
     }
   }, [dispatch, page, currentTopic]);
 
-  // Modified createPost handler to validate topics
+
   const handleCreatePost = async (data) => {
     try {
       if (!user) {
         toast.warning("Please login to create a post");
         return;
       }
-      
-      // Require at least one topic
+
+
       if (selectedTopics.length === 0) {
         toast.warning("Please select at least one topic");
         return;
       }
-      
+
       const result = await dispatch(createPost({
         content: data.content,
         _id: user._id,
         image: data.image && data.image.length > 0 ? data.image[0] : null,
         topics: selectedTopics
       }));
-      
+
       if (!result.error) {
         toast.success("Post created successfully");
         setCreatePostModal(false);
         setImagePreview(null);
-        setSelectedTopics([]); // Reset to empty array
+        setSelectedTopics([]);
         reset({ content: "", image: "" });
-        // Refresh posts by fetching page 1 with current topic
+
         setPage(1);
         dispatch(getPosts({ page: 1, limit: 10, topic: currentTopic }));
       }
@@ -119,14 +119,14 @@ const Community = () => {
     }
   };
 
-  // Simplified topic selection handler that properly supports multiple selection
+
   const handleTopicSelectionInModal = (topic) => {
     setSelectedTopics(prev => {
-      // If topic is already selected, remove it
+
       if (prev.includes(topic)) {
         return prev.filter(t => t !== topic);
-      } 
-      // Otherwise add it
+      }
+
       else {
         return [...prev, topic];
       }
@@ -142,12 +142,12 @@ const Community = () => {
       toast.warning("Please login to like posts");
       return;
     }
-    
+
     const targetPost = posts.find(post => post._id === postId);
     if (!targetPost) return;
-    
+
     const isCurrentlyLiked = isPostLikedByUser(targetPost);
-    
+
     dispatch({
       type: 'post/optimisticLikeToggle',
       payload: {
@@ -156,7 +156,7 @@ const Community = () => {
         isLiked: isCurrentlyLiked
       }
     });
-    
+
     dispatch(toggleLike(postId));
   };
 
@@ -166,12 +166,12 @@ const Community = () => {
         toast.warning("Please login to comment");
         return;
       }
-      
+
       const result = await dispatch(addComment({
         postId,
         content: data.commentContent
       }));
-      
+
       if (!result.error) {
         toast.success("Comment added successfully");
         setCommentingOnPost(null);
@@ -182,13 +182,13 @@ const Community = () => {
       console.error(error);
     }
   };
-  
+
   const handleDeletePost = (postId) => {
     setPostToDelete(postId);
     setDeleteModalOpen(true);
   };
 
-  // Add a new function to perform the actual deletion
+
   const confirmDeletePost = async () => {
     try {
       const result = await dispatch(deletePost(postToDelete));
@@ -203,55 +203,55 @@ const Community = () => {
     }
   };
 
-  // Setup intersection observer for post visibility tracking
+
   useEffect(() => {
-    // Skip if no user (no need to track views for logged-out users)
+
     if (!posts.length || !user) return;
-    
-    // Create an observer that will detect when posts become visible
+
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach(entry => {
-          // When a post becomes visible in the viewport
+
           if (entry.isIntersecting) {
             const postId = entry.target.dataset.postid;
             if (!postId) return;
-            
-            // Check if this post has already been viewed by this user
+
+
             const viewedPosts = JSON.parse(localStorage.getItem('viewedPosts') || '{}');
-            
+
             if (!viewedPosts[postId]) {
-              // Mark as viewed to prevent duplicate view counts
+
               viewedPosts[postId] = true;
               localStorage.setItem('viewedPosts', JSON.stringify(viewedPosts));
-              
-              // Increment view count in the backend
+
+
               dispatch(incrementPostView(postId));
-              
-              // Stop observing this post once it's been viewed
+
+
               observer.unobserve(entry.target);
             }
           }
         });
       },
-      { threshold: 0.5 } // Post is considered "viewed" when 50% visible
+      { threshold: 0.5 }
     );
-    
-    // Observe all post elements
+
+
     Object.keys(postRefs.current).forEach(postId => {
       const element = postRefs.current[postId];
       if (element) {
         observer.observe(element);
       }
     });
-    
-    // Cleanup observer when component unmounts
+
+
     return () => {
       observer.disconnect();
     };
   }, [posts, dispatch, user]);
-  
-  // Handle load more
+
+
   const handleLoadMore = () => {
     if (!loading && hasMore) {
       setPage(prevPage => prevPage + 1);
@@ -263,7 +263,7 @@ const Community = () => {
     return post.likes.some(like => like._id === user._id);
   };
 
-  // Scroll to top button - positioned on the right
+
   const ScrollToTopButton = () => (
     showScrollTop && (
       <button
@@ -276,7 +276,7 @@ const Community = () => {
     )
   );
 
-  // Floating create button - positioned to the left of the scroll button
+
   const FloatingCreateButton = () => (
     <button
       onClick={() => setCreatePostModal(true)}
@@ -287,19 +287,19 @@ const Community = () => {
     </button>
   );
 
-  // Add a function to handle sharing
+
   const handleSharePost = (post) => {
     setSharingPost(post);
     setShareModalOpen(true);
   };
 
-  // Delete confirmation modal
+
   const DeleteConfirmationModal = () => (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4"
       style={{ zIndex: 99999 }}
     >
-      <div 
+      <div
         className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden"
         style={{ zIndex: 100000 }}
       >
@@ -335,36 +335,36 @@ const Community = () => {
     </div>
   );
 
-  // Render topic badge component
+
   const TopicBadge = ({ topic }) => (
     <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full mr-1 mb-1">
       {topic}
     </span>
   );
 
-  // Modified handleTopicClick function to properly filter posts
+
   const handleTopicClick = (topic) => {
-    // Reset page to 1 when changing topics
+
     setPage(1);
-    
-    // Update the current topic in Redux store
+
+
     dispatch(setCurrentTopic(topic));
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Main Content - Changed to two-column layout */}
+      { }
       <div className="max-w-6xl mx-auto px-4 pt-20 md:pt-24">
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* Left column - Main feed (70% width on large screens) */}
+          { }
           <div className="lg:w-[70%]">
-            {/* Topic Categories - Updated with click handlers */}
+            { }
             <div className="mb-6">
               <h3 className="font-semibold text-gray-900 mb-3">Topics</h3>
               <div className="flex flex-wrap gap-2">
                 {topicsList.map(topic => (
-                  <button 
-                    key={topic} 
+                  <button
+                    key={topic}
                     className={`px-4 py-2 ${currentTopic === topic ? 'bg-green-100 text-green-800' : 'bg-white text-gray-700'} rounded-full font-medium hover:bg-green-100 transition-colors`}
                     onClick={() => handleTopicClick(topic)}
                   >
@@ -374,7 +374,7 @@ const Community = () => {
               </div>
             </div>
 
-            {/* Create Post Button */}
+            { }
             <div className="flex justify-end mb-4">
               <button
                 onClick={() => setCreatePostModal(true)}
@@ -384,8 +384,8 @@ const Community = () => {
                 Create Post
               </button>
             </div>
-            
-            {/* Posts feed - Display topics badges */}
+
+            { }
             <div className="space-y-4">
               {loading && posts.length === 0 ? (
                 <div className="flex justify-center py-12">
@@ -394,19 +394,19 @@ const Community = () => {
               ) : posts.length > 0 ? (
                 <>
                   {posts.map((post) => (
-                    <div 
-                      key={post._id} 
+                    <div
+                      key={post._id}
                       ref={el => postRefs.current[post._id] = el}
                       data-postid={post._id}
                       className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition-all duration-200 overflow-hidden shadow-sm hover:shadow-md"
                     >
                       <div className="flex items-center justify-between p-4 border-b border-gray-100">
-                        <div 
+                        <div
                           className="flex items-center space-x-3 cursor-pointer"
                           onClick={() => navigate(`/post/${post._id}`)}
                         >
-                          <img 
-                            src={post.user?.avatar || '/default-avatar.png'} 
+                          <img
+                            src={post.user?.avatar || '/default-avatar.png'}
                             alt={post.user?.username}
                             className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-100"
                           />
@@ -417,14 +417,14 @@ const Community = () => {
                             </p>
                           </div>
                         </div>
-                        
-                        {/* Delete button - only show for post owner */}
+
+                        { }
                         {user && post.user && user._id === post.user._id && (
-                          <button 
+                          <button
                             onClick={(e) => {
-                              e.stopPropagation(); 
+                              e.stopPropagation();
                               handleDeletePost(post._id);
-                            }} 
+                            }}
                             className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
                             title="Delete post"
                           >
@@ -432,8 +432,8 @@ const Community = () => {
                           </button>
                         )}
                       </div>
-                      
-                      {/* Post topics badges */}
+
+                      { }
                       {post.topics && post.topics.length > 0 && (
                         <div className="px-4 pt-3 pb-1 flex flex-wrap">
                           <span className="inline-flex items-center text-xs text-gray-500 mr-2">
@@ -445,19 +445,19 @@ const Community = () => {
                           ))}
                         </div>
                       )}
-                      
-                      {/* Post content */}
-                      <div 
+
+                      { }
+                      <div
                         className="p-4 cursor-pointer"
                         onClick={() => navigate(`/post/${post._id}`)}
                       >
                         <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">{post.content}</p>
-                        
+
                         {post.image && (
                           <div className="mt-4 rounded-lg overflow-hidden">
-                            <img 
-                              src={post.image} 
-                              alt="Post attachment" 
+                            <img
+                              src={post.image}
+                              alt="Post attachment"
                               className="w-full h-auto max-h-96 object-contain bg-gray-50"
                               onError={(e) => {
                                 console.error("Image failed to load:", e);
@@ -467,8 +467,8 @@ const Community = () => {
                           </div>
                         )}
                       </div>
-                      
-                      {/* Post stats */}
+
+                      { }
                       <div className="px-4 py-2 bg-gray-50 text-sm text-gray-600 flex items-center justify-between">
                         <div className="flex items-center space-x-4">
                           <span className="flex items-center">
@@ -485,14 +485,13 @@ const Community = () => {
                           {post.viewCount || 0} views
                         </span>
                       </div>
-                      
-                      {/* Post actions */}
+
+                      { }
                       <div className="flex border-t border-gray-100">
-                        <button 
+                        <button
                           onClick={() => handleToggleLike(post._id)}
-                          className={`flex-1 py-3 flex justify-center items-center hover:bg-gray-50 transition-colors ${
-                            isPostLikedByUser(post) ? 'text-red-500' : 'text-gray-600'
-                          }`}
+                          className={`flex-1 py-3 flex justify-center items-center hover:bg-gray-50 transition-colors ${isPostLikedByUser(post) ? 'text-red-500' : 'text-gray-600'
+                            }`}
                         >
                           {isPostLikedByUser(post) ? (
                             <FaHeart className="mr-2" size={16} />
@@ -501,33 +500,33 @@ const Community = () => {
                           )}
                           <span className="font-medium">{isPostLikedByUser(post) ? 'Liked' : 'Like'}</span>
                         </button>
-                        
-                        <button 
+
+                        <button
                           onClick={() => setCommentingOnPost(post._id === commentingOnPost ? null : post._id)}
                           className="flex-1 py-3 flex justify-center items-center hover:bg-gray-50 text-gray-600 transition-colors border-l border-r border-gray-100"
                         >
                           <FaComment className="mr-2" size={16} />
                           <span className="font-medium">Comment</span>
                         </button>
-                        
-                        <button 
-                          onClick={() => handleSharePost(post)} 
+
+                        <button
+                          onClick={() => handleSharePost(post)}
                           className="flex-1 py-3 flex justify-center items-center hover:bg-gray-50 text-gray-600 transition-colors"
                         >
                           <FaShare className="mr-2" size={16} />
                           <span className="font-medium">Share</span>
                         </button>
                       </div>
-                      
-                      {/* Comments section */}
+
+                      { }
                       {post.comments?.length > 0 && (
                         <div className="bg-gray-50 border-t border-gray-100">
                           <div className="p-4">
                             <div className="space-y-3">
                               {post.comments.slice(0, 3).map((comment, index) => (
                                 <div key={index} className="flex space-x-3">
-                                  <img 
-                                    src={comment.user?.avatar || '/default-avatar.png'} 
+                                  <img
+                                    src={comment.user?.avatar || '/default-avatar.png'}
                                     alt={comment.user?.username || 'User'}
                                     className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                                     onError={(e) => {
@@ -541,10 +540,10 @@ const Community = () => {
                                   </div>
                                 </div>
                               ))}
-                              
+
                               {post.comments.length > 3 && (
-                                <Link 
-                                  to={`/post/${post._id}`} 
+                                <Link
+                                  to={`/post/${post._id}`}
                                   className="block text-center text-green-600 hover:text-green-700 font-medium py-2"
                                 >
                                   View all {post.comments.length} comments
@@ -554,15 +553,15 @@ const Community = () => {
                           </div>
                         </div>
                       )}
-                      
-                      {/* Comment form */}
+
+                      { }
                       {commentingOnPost === post._id && (
                         <div className="p-4 bg-gray-50 border-t border-gray-100">
                           <form onSubmit={handleSubmit(data => handleAddComment(data, post._id))}>
                             <div className="flex space-x-3">
-                              <img 
-                                src={user?.avatar || '/default-avatar.png'} 
-                                alt={user?.username} 
+                              <img
+                                src={user?.avatar || '/default-avatar.png'}
+                                alt={user?.username}
                                 className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                               />
                               <div className="flex-1">
@@ -594,8 +593,8 @@ const Community = () => {
                       )}
                     </div>
                   ))}
-                  
-                  {/* Load more button */}
+
+                  { }
                   {hasMore && (
                     <div className="flex justify-center py-8">
                       <button
@@ -622,13 +621,13 @@ const Community = () => {
                       <FaComment className="text-green-600" size={24} />
                     </div>
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                      {currentTopic === 'All Posts' 
-                        ? 'No posts yet' 
+                      {currentTopic === 'All Posts'
+                        ? 'No posts yet'
                         : `No posts found in ${currentTopic}`}
                     </h3>
                     <p className="text-gray-600 mb-6">
-                      {currentTopic === 'All Posts' 
-                        ? 'Be the first to share something with the community!' 
+                      {currentTopic === 'All Posts'
+                        ? 'Be the first to share something with the community!'
                         : 'Create a post in this topic or try another topic'}
                     </p>
                     <button
@@ -643,10 +642,10 @@ const Community = () => {
               )}
             </div>
           </div>
-          
-          {/* Right sidebar - Additional features (30% width on large screens) */}
+
+          { }
           <div className="lg:w-[30%] space-y-6 mt-6 lg:mt-0">
-            {/* Community Groups Feature - Coming Soon */}
+            { }
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-4 relative overflow-hidden">
               <div className="absolute top-0 right-0">
                 <div className="bg-blue-500 text-white text-xs px-3 py-1 rotate-45 translate-y-2 translate-x-6">
@@ -675,7 +674,7 @@ const Community = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center mr-2">
-                      <FaLeaf className="text-amber-600" size={14} />  {/* Replace FaWheat with FaLeaf */}
+                      <FaLeaf className="text-amber-600" size={14} />  { }
                     </div>
                     <span className="font-medium text-sm">Grain Producers</span>
                   </div>
@@ -684,7 +683,7 @@ const Community = () => {
               </div>
             </div>
 
-            {/* Existing Marketplace section */}
+            { }
             <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200 p-4 relative overflow-hidden">
               <div className="absolute top-0 right-0">
                 <div className="bg-green-500 text-white text-xs px-3 py-1 rotate-45 translate-y-2 translate-x-6">
@@ -705,8 +704,8 @@ const Community = () => {
                 <span className="text-green-600 font-medium">Coming Soon</span>
               </div>
             </div>
-            
-            {/* Events Calendar */}
+
+            { }
             <div className="bg-white rounded-xl border border-gray-200 p-4">
               <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
                 <FaCalendarAlt className="mr-2 text-green-600" size={16} />
@@ -742,29 +741,29 @@ const Community = () => {
           </div>
         </div>
       </div>
-      
-      {/* Floating buttons */}
+
+      { }
       <ScrollToTopButton />
       <FloatingCreateButton />
-      
-      {/* Modals - Updated post creation modal to include topic selection */}
+
+      { }
       {createPostModal && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4"
           style={{ zIndex: 99999 }}
         >
-          <div 
+          <div
             className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
             style={{ zIndex: 100000 }}
           >
-            {/* Modal Header */}
+            { }
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h2 className="text-xl font-bold text-gray-900">Create a Post</h2>
-              <button 
+              <button
                 onClick={() => {
                   setCreatePostModal(false);
                   setImagePreview(null);
-                  setSelectedTopics([]);  // Reset to empty array
+                  setSelectedTopics([]);
                   reset();
                 }}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -772,14 +771,14 @@ const Community = () => {
                 <FaTimes className="text-gray-500" size={20} />
               </button>
             </div>
-            
-            {/* Modal Content */}
+
+            { }
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
               <form onSubmit={handleSubmit(handleCreatePost)} className="space-y-6">
-                {/* User Info */}
+                { }
                 <div className="flex items-center space-x-3">
-                  <img 
-                    src={user?.avatar || '/default-avatar.png'} 
+                  <img
+                    src={user?.avatar || '/default-avatar.png'}
                     alt={user?.username}
                     className="w-10 h-10 rounded-full object-cover"
                   />
@@ -789,7 +788,7 @@ const Community = () => {
                   </div>
                 </div>
 
-                {/* Topic Selection */}
+                { }
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Select Topics <span className="text-red-500">*</span>
@@ -797,15 +796,14 @@ const Community = () => {
                   </label>
                   <div className="flex flex-wrap gap-2">
                     {creationTopicsList.map(topic => (
-                      <button 
+                      <button
                         type="button"
-                        key={topic} 
+                        key={topic}
                         onClick={() => handleTopicSelectionInModal(topic)}
-                        className={`px-3 py-1.5 rounded-full text-sm ${
-                          selectedTopics.includes(topic) 
-                            ? 'bg-green-500 text-white' 
+                        className={`px-3 py-1.5 rounded-full text-sm ${selectedTopics.includes(topic)
+                            ? 'bg-green-500 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
+                          }`}
                       >
                         {topic}
                       </button>
@@ -816,7 +814,7 @@ const Community = () => {
                   )}
                 </div>
 
-                {/* Content Input */}
+                { }
                 <div>
                   <textarea
                     {...register('content', { required: true })}
@@ -826,8 +824,8 @@ const Community = () => {
                     style={{ fontSize: '16px' }}
                   />
                 </div>
-                
-                {/* Image Upload - Keep as is */}
+
+                { }
                 <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 hover:border-green-300 transition-colors">
                   <input
                     type="file"
@@ -836,21 +834,21 @@ const Community = () => {
                     {...register('image')}
                     className="hidden"
                   />
-                  <label 
-                    htmlFor="image" 
+                  <label
+                    htmlFor="image"
                     className="flex flex-col items-center cursor-pointer"
                   >
                     <FaImage className="text-gray-400 mb-2" size={24} />
                     <span className="text-gray-600 font-medium">Add Photo</span>
                     <span className="text-sm text-gray-400">or drag and drop</span>
                   </label>
-                  
+
                   {imagePreview && (
                     <div className="mt-4 relative">
-                      <img 
-                        src={imagePreview} 
-                        alt="Preview" 
-                        className="max-h-64 w-full object-contain rounded-lg" 
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="max-h-64 w-full object-contain rounded-lg"
                       />
                       <button
                         type="button"
@@ -865,8 +863,8 @@ const Community = () => {
                     </div>
                   )}
                 </div>
-                
-                {/* Submit Button */}
+
+                { }
                 <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
                   <button
                     type="button"
@@ -893,19 +891,19 @@ const Community = () => {
           </div>
         </div>
       )}
-      
-      {/* Share Modal */}
+
+      { }
       {shareModalOpen && sharingPost && (
-        <ShareModal 
-          post={sharingPost} 
+        <ShareModal
+          post={sharingPost}
           onClose={() => {
             setShareModalOpen(false);
             setSharingPost(null);
-          }} 
+          }}
         />
       )}
-      
-      {/* Delete Confirmation Modal */}
+
+      { }
       {deleteModalOpen && <DeleteConfirmationModal />}
     </div>
   );
