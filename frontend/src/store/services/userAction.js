@@ -1,12 +1,13 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { MAIN_API } from "../../utils/apiConfig";
 
 const signupAPI = createAsyncThunk(
   "auth/signup",
   async (data, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/v1/users/register",
+        `${MAIN_API}/users/register`,
         data,
         { withCredentials: true }
       );
@@ -22,7 +23,7 @@ const loginAPI = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/v1/users/login",
+        `${MAIN_API}/users/login`,
         data,
         { withCredentials: true }
       );
@@ -38,7 +39,7 @@ const getCurrentUserAPI = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/v1/users/current-user",
+        `${MAIN_API}/users/current-user`,
         {
           withCredentials: true,
         }
@@ -55,7 +56,7 @@ const logoutAPI = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/v1/users/logout",
+        `${MAIN_API}/users/logout`,
         {},
         {
           withCredentials: true,
@@ -75,7 +76,7 @@ const updateAvatarAPI = createAsyncThunk(
     try {
       const formData = new FormData()
       formData.append('avatar', avatarFile)
-      const response = await axios.patch('http://localhost:8000/api/v1/users/update-avatar', formData, {withCredentials: true})
+      const response = await axios.patch(`${MAIN_API}/users/update-avatar`, formData, {withCredentials: true})
       return response.data
     } catch (error) {
       return rejectWithValue(error.message);
@@ -88,7 +89,7 @@ const removeAvatarAPI = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.delete('http://localhost:8000/api/v1/users/delete-avatar', {withCredentials: true})
+      const response = await axios.delete(`${MAIN_API}/users/delete-avatar`, {withCredentials: true})
       return response.data
     } catch (error) {
       return rejectWithValue(error.message);
@@ -101,7 +102,7 @@ const updateAccountAPI = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       console.log(data)
-      const response = await axios.post('http://localhost:8000/api/v1/users/update-user-details', {fullname: data.fullname, username: data.username, bio: data.bio, addLinks: data.links}, {withCredentials: true})
+      const response = await axios.post(`${MAIN_API}/users/update-user-details`, {fullname: data.fullname, username: data.username, bio: data.bio, addLinks: data.links}, {withCredentials: true})
       console.log(response.data)
       return response.data
     } catch (error) {
@@ -115,7 +116,7 @@ const changePasswordAPI = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       console.log(data)
-      const response = axios.post('http://localhost:8000/api/v1/users/change-password', data, {withCredentials: true})
+      const response = axios.post(`${MAIN_API}/users/change-password`, data, {withCredentials: true})
       return response.data
     } catch (error) {
       return rejectWithValue(error.message);

@@ -1,7 +1,8 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { MAIN_API } from "../../utils/apiConfig";
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = MAIN_API.replace('/api/v1', ''); // Remove /api/v1 to get base URL
 
 // Update the getPosts action to support topic filtering
 const getPosts = createAsyncThunk(

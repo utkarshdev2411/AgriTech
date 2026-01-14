@@ -8,6 +8,7 @@ import { getCurrentUserAPI } from "./store/services/userAction";
 import EditProfile from "./pages/EditProfile/EditProfile";
 import PostDetail from "./pages/PostDetail/PostDetail";
 import AuthLayout from "./components/AuthLayout";
+import { Analytics } from "@vercel/analytics/react";
 
 function App() {
   const dispatch = useDispatch();
@@ -34,6 +35,7 @@ function App() {
           </Route>
         </Routes>
       </BrowserRouter>
+      <Analytics />
     </>
   );
 }

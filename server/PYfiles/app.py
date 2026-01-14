@@ -14,11 +14,24 @@ from google.api_core import exceptions as google_exceptions
 # --- Configuration ---
 load_dotenv()
 app = Flask(__name__)
-CORS(app)
+
+# --- PRODUCTION-READY CORS SETUP ---
+# Fetch allowed origins from env, default to local Vite frontend
+allowed_origins_raw = os.getenv("CORS_ORIGIN", "http://localhost:5173")
+ALLOWED_ORIGINS = allowed_origins_raw.split(",")
+
+# Initialize CORS with robust settings
+CORS(app, 
+    resources={r"/*": {"origins": ALLOWED_ORIGINS}},
+    supports_credentials=True,
+    allow_headers=["Content-Type", "Authorization"],
+    methods=["GET", "POST", "OPTIONS"]
+)
 
 # Logging Setup
 logging.basicConfig(level=logging.INFO)
 logger = app.logger
+logger.info(f"CORS enabled for origins: {ALLOWED_ORIGINS}")
 
 # --- Key Management System ---
 class KeyManager:

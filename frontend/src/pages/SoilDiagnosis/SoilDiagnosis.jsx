@@ -8,6 +8,8 @@ import { BsLayersFill } from 'react-icons/bs';
 import { MdWaterDrop, MdOutlineScience, MdAnalytics } from 'react-icons/md';
 import { TbPlant } from 'react-icons/tb';
 import { BsCloudRainFill, BsThermometerHalf } from 'react-icons/bs';
+import { AI_API } from '../../utils/apiConfig';
+import { motion } from 'framer-motion';
 import { motion } from 'framer-motion';
 
 const SoilDiagnosis = () => {
@@ -108,7 +110,7 @@ const SoilDiagnosis = () => {
 
         try {
             // Call the soil analysis API
-            const res = await axios.post('http://localhost:5000/report', formData, {
+            const res = await axios.post(`${AI_API}/report`, formData, {
                 headers: { "Content-Type": "multipart/form-data" }
             });
             

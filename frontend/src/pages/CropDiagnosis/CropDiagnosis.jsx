@@ -13,6 +13,7 @@ import {
 import { GiPlantSeed, GiWheat, GiCorn } from "react-icons/gi";
 import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
+import { AI_API } from "../../utils/apiConfig";
 
 function CropDiagnosis() {
   const [imagePreview, setImagePreview] = useState(null);
@@ -56,7 +57,7 @@ function CropDiagnosis() {
     formData.append('file', fileInput.files[0]);
     
     try {
-      const response = await fetch('http://localhost:5000/predict', {
+      const response = await fetch(`${AI_API}/predict`, {
         method: 'POST',
         body: formData
       });
