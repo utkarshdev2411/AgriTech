@@ -39,31 +39,31 @@ const Signup = () => {
   };
 
   return (
-    <div className="relative min-h-[88vh] bg-gradient-to-b from-[#eaffec] via-[#f2faf4] to-[#e9f6eb] overflow-hidden">
+    <div className="relative min-h-screen bg-gradient-to-b from-[#eaffec] via-[#f2faf4] to-[#e9f6eb] overflow-hidden">
       {/* Background patterns and decorative elements */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
       
       {/* Floating elements - Enhanced farm theme */}
       <div className="absolute w-full h-full pointer-events-none">
-        <div className="absolute top-[15%] left-[8%] text-green-300 opacity-20 animate-float-slow">
+        <div className="absolute top-[15%] left-[8%] text-green-300 opacity-10 animate-float-slow">
           <GiWheat size={35} />
         </div>
-        <div className="absolute top-[25%] right-[10%] text-amber-300 opacity-20 animate-float-medium">
+        <div className="absolute top-[25%] right-[10%] text-amber-300 opacity-10 animate-float-medium">
           <FaSeedling size={30} />
         </div>
-        <div className="absolute bottom-[20%] left-[15%] text-green-300 opacity-20 animate-float-fast">
+        <div className="absolute bottom-[20%] left-[15%] text-green-300 opacity-10 animate-float-fast">
           <GiPlantSeed size={25} />
         </div>
-        <div className="absolute bottom-[30%] right-[12%] text-blue-200 opacity-20 animate-float-slow">
+        <div className="absolute bottom-[30%] right-[12%] text-blue-200 opacity-10 animate-float-slow">
           <FaWind size={25} />
         </div>
-        <div className="absolute top-[40%] left-[18%] text-green-300 opacity-20 animate-float-medium">
+        <div className="absolute top-[40%] left-[18%] text-green-300 opacity-10 animate-float-medium">
           <PiPlantFill size={30} />
         </div>
-        <div className="absolute top-[35%] right-[18%] text-amber-400 opacity-20 animate-float-slow">
+        <div className="absolute top-[35%] right-[18%] text-amber-400 opacity-10 animate-float-slow">
           <GiCorn size={32} />
         </div>
-        <div className="absolute bottom-[35%] left-[10%] text-green-400 opacity-20 animate-float-medium">
+        <div className="absolute bottom-[35%] left-[10%] text-green-400 opacity-10 animate-float-medium">
           <GiFarmTractor size={35} />
         </div>
       </div>
@@ -76,25 +76,16 @@ const Signup = () => {
       </div>
 
       {/* Main content */}
-      <div className="container mx-auto px-4 py-12 flex flex-col md:flex-row items-center justify-center min-h-[88vh] relative z-10">
+      <div className="container mx-auto px-4 py-8 md:py-12 flex flex-col md:flex-row items-center justify-center min-h-screen relative z-10">
         {/* Left column - Form */}
         <div className="w-full md:w-1/2 mb-10 md:mb-0 flex justify-center items-center">
           <div className="w-full max-w-md">
-            <div className="text-center mb-6">
-              <div className="inline-block relative animate-float-slow mb-2">
-                <FaLeaf className="inline-block text-4xl text-green-500 drop-shadow-md transform rotate-45" />
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-300 rounded-full animate-ping-slow opacity-70"></div>
-              </div>
-              <h1 className="text-3xl font-bold text-slate-800 mb-2">Join AgriTech Community</h1>
-              <p className="text-slate-600">Create an account to start your farming journey</p>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-xl p-8 relative overflow-hidden">
+            <div className="bg-white rounded-xl shadow-xl p-6 md:p-8 relative overflow-hidden">
               {/* Decorative corner accent */}
               <div className="absolute top-0 right-0 w-24 h-24 bg-green-50 rounded-bl-full opacity-70"></div>
               <div className="absolute bottom-0 left-0 w-16 h-16 bg-amber-50 rounded-tr-full opacity-50"></div>
               
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 relative z-10">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 relative z-10">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="name">
                     Full Name
@@ -180,10 +171,10 @@ const Signup = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="relative w-full flex justify-center items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-lg font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300 hover:-translate-y-0.5 group"
+                    className="relative w-full flex justify-center items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 hover:shadow-xl hover:shadow-green-500/30 text-lg font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300 hover:-translate-y-0.5 group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                   >
                     <FaSeedling className="mr-2 text-green-100" />
-                    Create Account
+                    {isSubmitting ? 'Creating Account...' : 'Create Account'}
                     <FaArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                   </button>
                 </div>
@@ -201,16 +192,45 @@ const Signup = () => {
           </div>
         </div>
 
-        {/* Right column - Image */}
-        <div className="w-full md:w-1/2 flex items-center justify-center">
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-blue-50 rounded-full filter blur-xl opacity-70"></div>
-            <div className="relative z-10 transform transition-transform duration-500 hover:scale-105">
-              <img 
-                className="w-full max-w-lg" 
-                src="https://static.vecteezy.com/system/resources/previews/010/864/459/original/man-farmer-working-with-dump-truck-to-plant-carrot-agricultural-cartoon-character-illustrations-free-png.png" 
-                alt="Farmers planting trees illustration" 
-              />
+        {/* Right column - Featured Image - Hidden on mobile */}
+        <div className="hidden md:flex md:w-1/2 items-center justify-center p-6">
+          <div className="w-full max-w-2xl">
+            {/* Animated border container */}
+            <div className="relative p-1 rounded-3xl bg-gradient-to-r from-green-400 via-emerald-500 to-green-600 animate-gradient-x">
+              {/* Inner glow effect */}
+              <div className="absolute -inset-2 bg-gradient-to-r from-green-400 to-emerald-500 rounded-3xl blur-xl opacity-50 animate-pulse-slow"></div>
+              
+              {/* White background card */}
+              <div className="relative bg-white rounded-3xl shadow-2xl overflow-hidden">
+                {/* Decorative corner accents with animation */}
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-400 to-transparent opacity-30 group-hover:opacity-60 transition-opacity duration-500 z-10 animate-pulse-slow"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-emerald-400 to-transparent opacity-30 group-hover:opacity-60 transition-opacity duration-500 z-10 animate-pulse-slow"></div>
+                
+                {/* 4:3 Aspect Ratio Container */}
+                <div className="aspect-[4/3] w-full bg-gradient-to-br from-green-50 via-emerald-50 to-green-100 relative group">
+                  <img 
+                    src="https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=1200&h=900&fit=crop&q=80"
+                    alt="Community of farmers working together"
+                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+                  />
+                  
+                  {/* Overlay gradient for depth */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-green-900/40 via-transparent to-transparent opacity-60"></div>
+                  
+                  {/* Bottom overlay with mission statement */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+                    <p className="text-white text-lg font-semibold mb-1">Join Our Community</p>
+                    <p className="text-green-200 text-sm">Growing Together with Smart Farming Solutions</p>
+                  </div>
+                </div>
+                
+                {/* Decorative dots pattern */}
+                <div className="absolute top-4 left-4 grid grid-cols-3 gap-1 opacity-30">
+                  {[...Array(9)].map((_, i) => (
+                    <div key={i} className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>

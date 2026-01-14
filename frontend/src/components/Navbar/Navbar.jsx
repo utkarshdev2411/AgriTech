@@ -38,7 +38,7 @@ const Navbar = () => {
     }`;
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 w-full ${
+    <nav className={`sticky top-0 z-50 w-full ${
       scrolled 
         ? 'bg-white shadow-lg py-3' 
         : 'bg-white py-5'
