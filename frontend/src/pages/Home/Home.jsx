@@ -69,7 +69,7 @@ const Home = () => {
       </div>
 
       {/* Hero section with enhanced visual appeal */}
-      <div className='min-h-screen pt-20 bg-gradient-to-b from-[#efffed] via-[#f0f9f1] to-[#e8f5ea] flex flex-col justify-center items-center px-4 sm:px-8 md:px-16 relative overflow-hidden'>
+      <div className='min-h-screen bg-gradient-to-b from-[#efffed] via-[#f0f9f1] to-[#e8f5ea] flex flex-col justify-center items-center px-4 sm:px-8 md:px-16 relative overflow-hidden'>
         {/* Pattern overlay */}
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
 

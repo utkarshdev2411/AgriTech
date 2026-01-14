@@ -354,7 +354,7 @@ const Community = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       { }
-      <div className="max-w-6xl mx-auto px-4 pt-20 md:pt-24">
+      <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
         <div className="flex flex-col lg:flex-row gap-6">
           { }
           <div className="lg:w-[70%]">

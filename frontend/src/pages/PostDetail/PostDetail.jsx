@@ -74,7 +74,7 @@ const PostDetail = () => {
   
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-20 md:pt-24">
+      <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
@@ -86,7 +86,7 @@ const PostDetail = () => {
   
   if (!currentPost) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-20 md:pt-24">
+      <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
             <div className="max-w-md mx-auto">
@@ -105,7 +105,7 @@ const PostDetail = () => {
   }
   
   return (
-    <div className="min-h-screen bg-gray-50 pt-20 md:pt-24">
+    <div className="min-h-screen bg-gray-50 py-8 md:py-12">
       <div className="max-w-4xl mx-auto px-4">
         <Link 
           to="/community" 
