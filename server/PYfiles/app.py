@@ -2,34 +2,94 @@
 
 import os
 import logging
-import json
+import random
+import time
 import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 import google.generativeai as genai
+from google.api_core import exceptions as google_exceptions
 
 # --- Configuration ---
 load_dotenv()
 app = Flask(__name__)
-CORS(app) # Allow frontend access
+CORS(app)
 
-# 1. API KEYS
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-HF_API_KEY = os.getenv("HF_API_KEY")
-
-# 2. CONFIGURE GEMINI (Native PDF Support)
-genai.configure(api_key=GOOGLE_API_KEY)
-SOIL_MODEL = genai.GenerativeModel('gemini-2.5-flash')
-
-# 3. CONFIGURE CROP AI (Hugging Face)
-CROP_API_URL = "https://router.huggingface.co/hf-inference/models/linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification"
-
-# Setup Logging
+# Logging Setup
 logging.basicConfig(level=logging.INFO)
 logger = app.logger
 
-# --- Feature 1: Crop Diagnosis ---
+# --- Key Management System ---
+class KeyManager:
+    def __init__(self):
+        # 1. Load all keys starting with GOOGLE_API_KEY_
+        self.keys = [
+            val for key, val in os.environ.items() 
+            if key.startswith("GOOGLE_API_KEY") and val
+        ]
+        if not self.keys:
+            logger.error("No GOOGLE_API_KEYs found in .env!")
+            raise ValueError("No Google API Keys configured.")
+        
+        logger.info(f"Loaded {len(self.keys)} Gemini API keys.")
+
+    def get_random_key(self):
+        """Returns a random key from the pool."""
+        return random.choice(self.keys)
+
+    def configure_random_key(self):
+        """Configures the global genai object with a random key."""
+        key = self.get_random_key()
+        genai.configure(api_key=key)
+        return key
+
+# Initialize Key Manager
+key_manager = KeyManager()
+HF_API_KEY = os.getenv("HF_API_KEY")
+
+# Hugging Face URL
+CROP_API_URL = "https://router.huggingface.co/hf-inference/models/linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification"
+
+# --- Helper: Safe Gemini Caller ---
+def call_gemini_safe(content_parts, system_instruction=None, retries=3):
+    """
+    Tries to call Gemini. If rate limited, switches keys and retries.
+    """
+    attempt = 0
+    last_error = None
+
+    while attempt < retries:
+        try:
+            # 1. Switch Key before every attempt
+            current_key = key_manager.configure_random_key()
+            
+            # 2. Setup Model
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            
+            # 3. Generate
+            # We pass the system instruction inside the prompt context if needed, 
+            # or simplify by just sending the parts.
+            response = model.generate_content(content_parts)
+            return response.text
+
+        except google_exceptions.ResourceExhausted as e:
+            # 4. Handle Rate Limits (429)
+            logger.warning(f"Key ...{current_key[-4:]} exhausted. Switching key. (Attempt {attempt+1}/{retries})")
+            attempt += 1
+            last_error = e
+            time.sleep(1) # Brief pause to let things settle
+
+        except Exception as e:
+            # Other errors (like network) might not be solved by key switching, but we retry anyway just in case
+            logger.error(f"Gemini Error: {e}")
+            attempt += 1
+            last_error = e
+            
+    # If we run out of retries
+    raise last_error
+
+# --- Feature 1: Crop Diagnosis (Hugging Face) ---
 def get_crop_treatment(disease_label):
     treatments = {
         "Tomato_Late_blight": "Apply copper-based fungicides. Remove infected leaves immediately.",
@@ -50,7 +110,6 @@ def crop_predict():
         file = request.files["file"]
         image_bytes = file.read()
         
-        # Call Hugging Face
         headers = {
             "Authorization": f"Bearer {HF_API_KEY}",
             "Content-Type": "application/octet-stream"
@@ -72,8 +131,8 @@ def crop_predict():
         return jsonify({
             "disease": readable_label,
             "confidence": score,
-            "treatment": treatment, # Sending separate fields for better UI
-            "prediction_text": f"{readable_label}: {treatment}" # Backward compatibility
+            "treatment": treatment,
+            "prediction_text": f"{readable_label}: {treatment}"
         })
 
     except Exception as e:
@@ -81,7 +140,7 @@ def crop_predict():
         return jsonify({"error": str(e)}), 500
 
 
-# --- Feature 2: Soil Diagnosis (The Optimized Flow) ---
+# --- Feature 2: Soil Diagnosis (With Key Rotation) ---
 @app.route("/report", methods=["POST"])
 def soil_report():
     if "file" not in request.files or "formData" not in request.form:
@@ -89,11 +148,10 @@ def soil_report():
         
     try:
         pdf_file = request.files["file"]
-        form_data = request.form["formData"] # User input (Location, Crop type, etc.)
+        form_data = request.form["formData"]
         pdf_bytes = pdf_file.read()
 
-        # THE MAGIC: Sending raw PDF bytes directly to Gemini 1.5 Flash
-        # No RAG, No VectorDB, No Poppler needed.
+        # Construct the detailed prompt
         prompt = f"""
         You are an expert agronomist. Analyze this soil test report and the user's details.
         
@@ -107,26 +165,30 @@ def soil_report():
         
         OUTPUT FORMAT (Strict Markdown):
         ## 📊 Soil Status
-        * **pH Level:** [Value] ([Status: Acidic/Neutral/Alkaline])
+        * **pH Level:** [Value] ([Status])
         * **Nutrients:** N: [Value], P: [Value], K: [Value]
         
         ## ⚠️ Critical Deficiencies
-        * [List deficiencies or "None"]
+        * [List deficiencies]
         
         ## 💡 Expert Recommendations
-        * [Specific advice based on the PDF data]
+        * [Specific advice]
         """
         
-        response = SOIL_MODEL.generate_content([
+        # Prepare content parts (PDF + Prompt)
+        content = [
             {"mime_type": "application/pdf", "data": pdf_bytes},
             prompt
-        ])
+        ]
         
-        return jsonify({"answer": response.text})
+        # CALL WITH ROTATION & RETRY
+        result_text = call_gemini_safe(content)
+        
+        return jsonify({"result": result_text})
 
     except Exception as e:
-        logger.error(f"Soil Error: {e}")
-        return jsonify({"error": f"Failed to analyze report: {str(e)}"}), 500
+        logger.error(f"Soil Analysis Failed: {e}")
+        return jsonify({"error": "Failed to analyze report after multiple retries"}), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
