@@ -10,7 +10,6 @@ import { TbPlant } from 'react-icons/tb';
 import { BsCloudRainFill, BsThermometerHalf } from 'react-icons/bs';
 import { AI_API } from '../../utils/apiConfig';
 import { motion } from 'framer-motion';
-import { motion } from 'framer-motion';
 
 const SoilDiagnosis = () => {
     const { control, register, handleSubmit, watch, reset, setValue, 
