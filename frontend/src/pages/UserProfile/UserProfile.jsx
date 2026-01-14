@@ -4,9 +4,10 @@ import Logout from "../../components/Logout";
 
 function Profile() {
   return (
-    <div className="max-w-2xl m-auto">
-      
-      <ProfileComponent/>
+    <div className="min-h-screen bg-gradient-to-b from-green-50 via-white to-green-50 py-12">
+      <div className="max-w-4xl mx-auto px-4">
+        <ProfileComponent/>
+      </div>
     </div>
   );
 }

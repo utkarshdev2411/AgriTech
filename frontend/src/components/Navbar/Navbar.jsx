@@ -12,6 +12,9 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
+  // Default avatar URL
+  const defaultAvatar = "https://ui-avatars.com/api/?name=" + encodeURIComponent(user?.fullname || user?.username || "User") + "&size=120&background=22c55e&color=ffffff&bold=true";
+  
   // Add scroll effect for navbar
   useEffect(() => {
     const handleScroll = () => {
@@ -82,7 +85,14 @@ const Navbar = () => {
           <div className="ml-8 flex items-center gap-5">
             {status && (
               <Link to={'/profile'} className="h-12 w-12 overflow-hidden rounded-full border-3 border-green-500 hover:border-green-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105">
-                <img src={user?.avatar} alt="profile" className="h-full w-full object-cover" />
+                <img 
+                  src={user?.avatar || defaultAvatar} 
+                  alt="profile" 
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    e.target.src = defaultAvatar;
+                  }}
+                />
               </Link>
             )}
             {!status ? (
@@ -107,7 +117,14 @@ const Navbar = () => {
           <div className="mt-8 flex flex-col gap-5">
             {status && (
               <Link to={'/profile'} className="flex items-center gap-4" onClick={toggleMobileMenu}>
-                <img src={user?.avatar} alt="profile" className="h-12 w-12 rounded-full border-3 border-green-500" />
+                <img 
+                  src={user?.avatar || defaultAvatar} 
+                  alt="profile" 
+                  className="h-12 w-12 rounded-full border-3 border-green-500"
+                  onError={(e) => {
+                    e.target.src = defaultAvatar;
+                  }}
+                />
                 <span className="text-lg font-semibold">{user?.username}</span>
               </Link>
             )}
