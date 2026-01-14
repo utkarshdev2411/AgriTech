@@ -29,6 +29,11 @@ const Community = () => {
   const [postToDelete, setPostToDelete] = useState(null);
   const postRefs = useRef({});
 
+  // Helper function to get default avatar
+  const getDefaultAvatar = (name) => {
+    return "https://ui-avatars.com/api/?name=" + encodeURIComponent(name || "User") + "&size=200&background=22c55e&color=ffffff&bold=true";
+  };
+
 
   const [selectedTopics, setSelectedTopics] = useState([]);
 
@@ -406,9 +411,12 @@ const Community = () => {
                           onClick={() => navigate(`/post/${post._id}`)}
                         >
                           <img
-                            src={post.user?.avatar || '/default-avatar.png'}
+                            src={post.user?.avatar || getDefaultAvatar(post.user?.fullname || post.user?.username)}
                             alt={post.user?.username}
                             className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-100"
+                            onError={(e) => {
+                              e.target.src = getDefaultAvatar(post.user?.fullname || post.user?.username);
+                            }}
                           />
                           <div>
                             <h3 className="font-semibold text-gray-900">{post.user?.fullname || post.user?.username}</h3>
@@ -526,11 +534,11 @@ const Community = () => {
                               {post.comments.slice(0, 3).map((comment, index) => (
                                 <div key={index} className="flex space-x-3">
                                   <img
-                                    src={comment.user?.avatar || '/default-avatar.png'}
+                                    src={comment.user?.avatar || getDefaultAvatar(comment.user?.fullname || comment.user?.username)}
                                     alt={comment.user?.username || 'User'}
                                     className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                                     onError={(e) => {
-                                      e.target.src = '/default-avatar.png';
+                                      e.target.src = getDefaultAvatar(comment.user?.fullname || comment.user?.username);
                                       e.target.onerror = null;
                                     }}
                                   />
@@ -560,9 +568,12 @@ const Community = () => {
                           <form onSubmit={handleSubmit(data => handleAddComment(data, post._id))}>
                             <div className="flex space-x-3">
                               <img
-                                src={user?.avatar || '/default-avatar.png'}
+                                src={user?.avatar || getDefaultAvatar(user?.fullname || user?.username)}
                                 alt={user?.username}
                                 className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                                onError={(e) => {
+                                  e.target.src = getDefaultAvatar(user?.fullname || user?.username);
+                                }}
                               />
                               <div className="flex-1">
                                 <textarea
@@ -778,9 +789,12 @@ const Community = () => {
                 { }
                 <div className="flex items-center space-x-3">
                   <img
-                    src={user?.avatar || '/default-avatar.png'}
+                    src={user?.avatar || getDefaultAvatar(user?.fullname || user?.username)}
                     alt={user?.username}
                     className="w-10 h-10 rounded-full object-cover"
+                    onError={(e) => {
+                      e.target.src = getDefaultAvatar(user?.fullname || user?.username);
+                    }}
                   />
                   <div>
                     <p className="font-medium text-gray-900">{user?.fullname || user?.username}</p>

@@ -34,8 +34,12 @@ function CropDiagnosis() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setPredictionText(""); // Clear previous results
+
     const formData = new FormData();
-    formData.append('file', e.target.file.files[0]);
+    // Ensure we grab the file correctly
+    const fileInput = document.getElementById('image');
+    formData.append('file', fileInput.files[0]);
     
     try {
       const response = await fetch('http://localhost:5124/predict', {
@@ -44,10 +48,16 @@ function CropDiagnosis() {
       });
 
       const data = await response.json();
-      setPredictionText(data.prediction_text);
+      
+      if (data.error) {
+        setPredictionText(`Error: ${data.error}`);
+      } else {
+        // This will display the formatted text we created in Python
+        setPredictionText(data.prediction_text);
+      }
     } catch (error) {
       console.error("Error diagnosing crop:", error);
-      setPredictionText("Sorry, we encountered an error analyzing your crop. Please try again.");
+      setPredictionText("Network error. Please ensure the backend is running.");
     } finally {
       setLoading(false);
     }

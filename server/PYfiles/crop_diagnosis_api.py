@@ -1,233 +1,114 @@
 import os
-import uuid
-import io
-import numpy as np
-from PIL import Image
+import logging
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from werkzeug.utils import secure_filename
-import requests
-import logging
-import tensorflow as tf
+from huggingface_hub import InferenceClient
 
-# --- Configuration & Initialization ---
+# --- Configuration ---
 load_dotenv()
-API_URL = "https://api-inference.huggingface.co/models/chaiyanabe/plant-disease-squeeze"
-HF_API_KEY = os.getenv("HF_API_KEY", "")
+HF_API_KEY = os.getenv("HF_API_KEY")
 
-# Setup headers for huggingface API calls
-headers = {"Authorization": f"Bearer {HF_API_KEY}"} if HF_API_KEY else {}
+MODEL_ID = "linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification"
 
-# Setup Flask app
 app = Flask(__name__)
-app.logger.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler = logging.StreamHandler()
-handler.setFormatter(formatter)
-app.logger.addHandler(handler)
+CORS(app)
 
-CORS(app, resources={r"/*": {"origins": ["http://localhost:5173", "*"]}})
+# Setup Logging
+logging.basicConfig(level=logging.INFO)
+logger = app.logger
 
-# Configure file upload settings
-BASE_DIR = os.path.dirname(__file__)
-UPLOAD_FOLDER = os.path.join(BASE_DIR, "..", "uploads", "crops")
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
-MAX_CONTENT_LENGTH = 5 * 1024 * 1024  # 5 MB
+# Initialize InferenceClient with the router provider
+client = InferenceClient(
+    provider="hf-inference",
+    api_key=HF_API_KEY
+)
 
-# --- Helper functions ---
-def allowed_file(filename):
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def query_huggingface(image_bytes):
+# --- Helper: Treatment Logic ---
+def get_treatment(disease_label):
     """
-    Send image to Hugging Face for prediction using a plant disease classification model
+    Map diseases to treatments.
     """
-    try:
-        response = requests.post(
-            API_URL,
-            headers=headers,
-            data=image_bytes
-        )
-        # Check if request was successful
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.HTTPError as e:
-        app.logger.error(f"HTTP error from Hugging Face API: {str(e)}")
-        return {"error": f"Hugging Face API error: {str(e)}"}
-    except requests.exceptions.RequestException as e:
-        app.logger.error(f"Error connecting to Hugging Face API: {str(e)}")
-        return {"error": f"Connection error: {str(e)}"}
-    except Exception as e:
-        app.logger.error(f"Unexpected error: {str(e)}")
-        return {"error": f"Unexpected error: {str(e)}"}
+    treatments = {
+        "Tomato_Late_blight": "Apply copper-based fungicides. Remove infected leaves immediately.",
+        "Tomato_Early_blight": "Improve air circulation. Apply fungicides with chlorothalonil.",
+        "Tomato_Healthy": "Your plant looks great! Keep up the regular watering schedule.",
+        "Potato_Late_blight": "Destroy infected tubers. Use resistant varieties.",
+        "Corn_Common_rust": "Plant resistant hybrids. Apply fungicides if infection is severe.",
+        "Apple_Apple_scab": "Remove fallen leaves. Apply fungicides during wet periods.",
+        "Apple_Black_rot": "Prune infected branches. Apply fungicides in early spring.",
+        "Apple_Cedar_apple_rust": "Remove nearby cedar trees. Apply fungicides preventively.",
+        "Grape_Black_rot": "Remove mummified fruit. Apply fungicides before bloom.",
+        "Grape_Esca_(Black_Measles)": "Prune infected wood. Improve drainage and air circulation.",
+        "Peach_Bacterial_spot": "Use copper sprays. Plant resistant varieties.",
+        "Pepper_Bacterial_spot": "Rotate crops. Use disease-free seeds.",
+        "Strawberry_Leaf_scorch": "Remove infected leaves. Improve air circulation.",
+        # Add a default fallback
+        "default": "Consult a local agricultural expert. Ensure proper drainage and remove infected parts."
+    }
+    return treatments.get(disease_label, treatments["default"])
 
-def fallback_prediction(image_bytes):
-    """
-    Fallback method using TensorFlow Lite model if Hugging Face API is unavailable
-    """
-    try:
-        # Path to TF Lite model
-        model_path = os.path.join(BASE_DIR, "models", "plant_disease_model.tflite")
-        
-        # Check if model exists
-        if not os.path.exists(model_path):
-            app.logger.error("TensorFlow Lite model not found")
-            return {"error": "Fallback model not available"}
-        
-        # Load the TFLite model
-        interpreter = tf.lite.Interpreter(model_path=model_path)
-        interpreter.allocate_tensors()
-
-        # Get input and output tensors
-        input_details = interpreter.get_input_details()
-        output_details = interpreter.get_output_details()
-        
-        # Process image
-        img = Image.open(io.BytesIO(image_bytes))
-        img = img.resize((224, 224))
-        img_array = np.array(img, dtype=np.float32) / 255.0
-        img_array = np.expand_dims(img_array, axis=0)
-        
-        # Set the input tensor
-        interpreter.set_tensor(input_details[0]['index'], img_array)
-        
-        # Run inference
-        interpreter.invoke()
-        
-        # Get the output tensor
-        output_data = interpreter.get_tensor(output_details[0]['index'])
-        
-        # Get the predicted class
-        class_idx = np.argmax(output_data)
-        confidence = output_data[0][class_idx]
-        
-        # Map class index to disease name
-        # This would need to be populated with your model's classes
-        diseases = ["Healthy", "Disease_1", "Disease_2", "Disease_3"]
-        if class_idx < len(diseases):
-            return [{
-                "label": diseases[class_idx],
-                "score": float(confidence)
-            }]
-        else:
-            return {"error": "Unknown prediction class"}
-            
-    except Exception as e:
-        app.logger.error(f"Error in fallback prediction: {str(e)}")
-        return {"error": f"Fallback prediction error: {str(e)}"}
-
-# --- Routes ---
 @app.route("/health", methods=["GET"])
 def health():
-    """Health check endpoint"""
-    return jsonify({"status": "ok"}), 200
+    return jsonify({"status": "API is running"}), 200
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    """
-    Process uploaded crop image and return disease diagnosis
-    """
-    # Check if file exists
     if "file" not in request.files:
-        return jsonify({"error": "No file part in the request"}), 400
-        
-    file = request.files["file"]
+        return jsonify({"error": "No file uploaded"}), 400
     
-    # Check if filename is empty
+    file = request.files["file"]
     if file.filename == "":
         return jsonify({"error": "No file selected"}), 400
-    
-    # Check if file is allowed
-    if not allowed_file(file.filename):
-        return jsonify({"error": "File type not supported. Please upload JPG, JPEG or PNG images"}), 415
 
-    # Save file with secure filename
-    filename = secure_filename(file.filename)
-    unique_name = f"{uuid.uuid4().hex}_{filename}"
-    file_path = os.path.join(UPLOAD_FOLDER, unique_name)
-    
     try:
-        # Save the file
-        file.save(file_path)
-        app.logger.info(f"Saved crop image to {file_path}")
+        # 1. READ FILE BYTES
+        image_bytes = file.read()
         
-        # Read the file as bytes for inference
-        with open(file_path, "rb") as img_file:
-            img_bytes = img_file.read()
-        
-        # Try Hugging Face API first
-        predictions = query_huggingface(img_bytes)
-        
-        # Check if there was an error with Hugging Face
-        if isinstance(predictions, dict) and "error" in predictions:
-            app.logger.warning(f"Hugging Face API error: {predictions['error']}. Trying fallback...")
-            # Try fallback prediction
-            predictions = fallback_prediction(img_bytes)
-        
-        # Check if we have a valid prediction
-        if isinstance(predictions, list) and predictions:
-            top_prediction = predictions[0]
-            label = top_prediction.get("label", "Unknown")
-            score = top_prediction.get("score", 0)
+        # 2. SEND TO HUGGING FACE VIA ROUTER
+        # The InferenceClient with hf-inference provider handles bytes
+        try:
+            predictions = client.image_classification(
+                image_bytes,
+                model=MODEL_ID
+            )
             
-            # Format label for better readability
-            formatted_label = label.replace("_", " ").title()
-            
-            # Create treatment recommendations based on the diagnosis
-            treatment_text = get_treatment_recommendation(label)
-            
-            response_data = {
-                "prediction_text": f"Your crop appears to have {formatted_label} with {score:.1%} confidence.\n\n{treatment_text}",
-                "disease": formatted_label,
-                "confidence": float(score),
-                "image_path": unique_name
-            }
-            
-            return jsonify(response_data)
-        else:
-            return jsonify({"error": "Could not generate a prediction", 
-                           "prediction_text": "Sorry, we encountered an error analyzing your crop. Please try again."}), 500
-            
-    except Exception as e:
-        app.logger.error(f"Error processing image: {str(e)}", exc_info=True)
-        return jsonify({"prediction_text": f"Sorry, we encountered an error analyzing your crop. Please try again.",
-                       "error": str(e)}), 500
+        except Exception as hf_error:
+            logger.error(f"HF Inference Error: {str(hf_error)}")
+            return jsonify({
+                "error": f"AI Model Error: {str(hf_error)}",
+                "prediction_text": "The AI model encountered an error. Please try again."
+            }), 503
 
-def get_treatment_recommendation(disease_label):
-    """
-    Return treatment recommendations based on detected disease
-    """
-    # Dictionary of common plant diseases and their treatments
-    treatments = {
-        "Tomato Late Blight": "Apply copper-based fungicides early when conditions favor disease. Ensure proper spacing between plants for good air circulation. Remove and destroy infected leaves and plants.",
+        # 3. PARSE RESPONSE
+        # The API returns a list of objects
+        if not predictions or not isinstance(predictions, list):
+            return jsonify({"error": "No predictions returned"}), 500
+
+        top_result = predictions[0]
+        # Access as dict keys
+        label = top_result.get('label', 'Unknown')
+        score = top_result.get('score', 0)
+
+        # 4. FORMAT RESPONSE
+        readable_label = label.replace("_", " ").replace("  ", " ").strip()
+        treatment = get_treatment(label)
         
-        "Tomato Early Blight": "Apply fungicides containing chlorothalonil or copper. Mulch around the base of plants. Prune lower leaves to improve air circulation.",
-        
-        "Tomato Healthy": "Your tomato plant appears healthy! Continue regular watering and fertilization schedules.",
-        
-        "Potato Late Blight": "Apply fungicides containing copper or chlorothalonil. Remove infected plants immediately to prevent spread. Consider resistant varieties for future plantings.",
-        
-        "Potato Early Blight": "Apply fungicides and ensure proper plant spacing. Rotate crops annually and remove plant debris after harvest to reduce overwintering of the pathogen.",
-        
-        "Corn Common Rust": "Apply fungicides containing azoxystrobin or pyraclostrobin. Plant resistant varieties. Ensure proper field drainage.",
-        
-        "Apple Scab": "Apply fungicides before and during rainy periods. Rake and destroy fallen leaves to reduce overwintering of the fungus.",
-        
-        "Apple Black Rot": "Prune out dead or diseased wood during dormant season. Apply fungicides during the growing season.",
-        
-        # Add more diseases and treatments as needed
-    }
-    
-    # Clean up the disease label for matching
-    clean_label = disease_label.replace("_", " ").title()
-    
-    # Return specific treatment if available, otherwise a general recommendation
-    return treatments.get(clean_label, 
-        "Consult with a local agricultural extension office for specific treatment recommendations. " 
-        "Generally, remove infected parts, ensure good air circulation, and consider appropriate fungicides or treatments."
-    )
+        prediction_text = (
+            f"Diagnosis: {readable_label}\n"
+            f"Confidence: {score:.1%}\n\n"
+            f"Recommended Treatment: {treatment}"
+        )
+
+        return jsonify({
+            "prediction_text": prediction_text,
+            "disease": readable_label,
+            "confidence": score
+        })
+
+    except Exception as e:
+        logger.error(f"Server Error: {str(e)}")
+        return jsonify({"error": "Internal server error processing image"}), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5124, debug=False)
+    app.run(host="0.0.0.0", port=5124, debug=True)
