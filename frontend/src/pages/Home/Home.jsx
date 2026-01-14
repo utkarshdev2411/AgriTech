@@ -243,7 +243,7 @@ const Home = () => {
               <div className="relative group/avatar">
                 <div className="absolute -inset-1 bg-gradient-to-r from-green-400 to-green-600 rounded-full blur opacity-30 group-hover/avatar:opacity-75 transition duration-300"></div>
                 <div className="relative h-14 w-14 md:h-16 md:w-16 lg:h-20 lg:w-20 rounded-full overflow-hidden border-3 border-white shadow-lg transform group-hover/avatar:scale-105 transition-transform duration-300">
-                  <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Utkarsh Sharma" className="h-full w-full object-cover" />
+                  <img src="https://avatars.githubusercontent.com/u/114491739?v=4" alt="Utkarsh Sharma" className="h-full w-full object-cover" />
                 </div>
               </div>
               <div className="text-center sm:text-left">

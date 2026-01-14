@@ -17,6 +17,7 @@ import { useSelector } from "react-redux";
 function CropDiagnosis() {
   const [imagePreview, setImagePreview] = useState(null);
   const [predictionText, setPredictionText] = useState('');
+  const [resultData, setResultData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showComingSoon, setShowComingSoon] = useState(false);
   const userInfo = useSelector(state => state.user.userInfo);
@@ -24,13 +25,13 @@ function CropDiagnosis() {
   
   // Auto-scroll to results when prediction is ready
   useEffect(() => {
-    if (predictionText && !loading && resultsRef.current) {
+    if (resultData && !loading && resultsRef.current) {
       resultsRef.current.scrollIntoView({ 
         behavior: 'smooth', 
         block: 'start'
       });
     }
-  }, [predictionText, loading]);
+  }, [resultData, loading]);
   
   const handleChange = (e) => {
     const file = e.target.files[0];
@@ -47,6 +48,7 @@ function CropDiagnosis() {
     e.preventDefault();
     setLoading(true);
     setPredictionText(""); // Clear previous results
+    setResultData(null);
 
     const formData = new FormData();
     // Ensure we grab the file correctly
@@ -54,7 +56,7 @@ function CropDiagnosis() {
     formData.append('file', fileInput.files[0]);
     
     try {
-      const response = await fetch('http://localhost:5124/predict', {
+      const response = await fetch('http://localhost:5000/predict', {
         method: 'POST',
         body: formData
       });
@@ -64,8 +66,8 @@ function CropDiagnosis() {
       if (data.error) {
         setPredictionText(`Error: ${data.error}`);
       } else {
-        // This will display the formatted text we created in Python
-        setPredictionText(data.prediction_text);
+        // Store structured data for new UI
+        setResultData(data);
       }
     } catch (error) {
       console.error("Error diagnosing crop:", error);
@@ -199,7 +201,7 @@ function CropDiagnosis() {
           </motion.div>
           
           {/* Results Section */}
-          {(predictionText || loading) && (
+          {(resultData || predictionText || loading) && (
             <motion.div 
               ref={resultsRef}
               initial={{ y: 20, opacity: 0 }}
@@ -217,7 +219,53 @@ function CropDiagnosis() {
                   <div className="w-16 h-16 border-4 border-green-200 border-t-green-500 rounded-full animate-spin mb-4"></div>
                   <p className="text-slate-600 animate-pulse">Analyzing your crop image...</p>
                 </div>
-              ) : (
+              ) : resultData ? (
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center bg-green-50 p-3 rounded">
+                    <span className="font-semibold text-gray-700">Disease Detected:</span>
+                    <span className="text-green-700 font-bold text-lg">{resultData.disease}</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-green-50 p-3 rounded">
+                    <span className="font-semibold text-gray-700">Confidence:</span>
+                    <span className="text-green-700">{(resultData.confidence * 100).toFixed(1)}%</span>
+                  </div>
+                  <div className="bg-blue-50 p-4 rounded-lg mt-4">
+                    <h4 className="font-bold text-blue-800 mb-1">Recommended Treatment:</h4>
+                    <p className="text-gray-700 leading-relaxed">{resultData.treatment}</p>
+                  </div>
+                  <div className="mt-6 pt-4 border-t border-green-100">
+                    <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
+                      <h3 className="text-sm font-medium text-amber-800 flex items-center">
+                        <FaLeaf className="mr-2" /> Share Your Results
+                      </h3>
+                      <p className="mt-1 text-sm text-amber-700">
+                        Share this diagnosis with our farming community for additional insights.
+                      </p>
+                      <div className="mt-3">
+                        <button 
+                          onClick={handleShareClick}
+                          className="px-4 py-2 text-xs font-medium text-amber-800 bg-amber-100 rounded-md hover:bg-amber-200 transition-colors"
+                        >
+                          Share with Community
+                        </button>
+                        
+                        {/* Coming Soon Notification - Below Button */}
+                        {showComingSoon && (
+                          <motion.div 
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="mt-2 text-xs text-slate-500 italic"
+                          >
+                            Feature coming soon
+                          </motion.div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : predictionText ? (
                 <div className="flex gap-4 items-start">
                   <div className="h-10 w-10 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center font-bold text-white text-lg flex-shrink-0">
                     AI
@@ -225,48 +273,14 @@ function CropDiagnosis() {
                   <div className="bg-gradient-to-br from-green-100 to-green-50 border border-green-200 rounded-xl px-5 py-4 text-green-900 w-full">
                     <div className="flex items-center mb-2">
                       <MdOutlineScience className="text-green-600 mr-2" />
-                      <span className="font-semibold">Diagnosis:</span>
+                      <span className="font-semibold">Message:</span>
                     </div>
                     <div className="mt-1 text-base leading-relaxed whitespace-pre-wrap">
                       {predictionText}
                     </div>
                   </div>
                 </div>
-              )}
-              
-              {!loading && predictionText && (
-                <div className="mt-6 pt-4 border-t border-green-100">
-                  <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
-                    <h3 className="text-sm font-medium text-amber-800 flex items-center">
-                      <FaLeaf className="mr-2" /> Treatment Recommendation
-                    </h3>
-                    <p className="mt-1 text-sm text-amber-700">
-                      For additional treatment recommendations and advice, consider sharing this diagnosis with our farming community.
-                    </p>
-                    <div className="mt-3">
-                      <button 
-                        onClick={handleShareClick}
-                        className="px-4 py-2 text-xs font-medium text-amber-800 bg-amber-100 rounded-md hover:bg-amber-200 transition-colors"
-                      >
-                        Share with Community
-                      </button>
-                      
-                      {/* Coming Soon Notification - Below Button */}
-                      {showComingSoon && (
-                        <motion.div 
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className="mt-2 text-xs text-slate-500 italic"
-                        >
-                          Feature coming soon
-                        </motion.div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
+              ) : null}
             </motion.div>
           )}
         </div>

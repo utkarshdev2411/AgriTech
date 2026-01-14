@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
 import { FaCloudUploadAlt, FaFileAlt, FaLeaf, FaSeedling, FaWater } from 'react-icons/fa';
 import { GiPlantSeed, GiWheat, GiFarmTractor } from 'react-icons/gi';
 import { BsLayersFill } from 'react-icons/bs';
@@ -21,6 +22,7 @@ const SoilDiagnosis = () => {
     const [loading, setLoading] = useState(false);
     const [isReportVisible, setIsReportVisible] = useState(false);
     const [activeTab, setActiveTab] = useState('basic');
+    const [basicInfoError, setBasicInfoError] = useState(false);
     const formRef = useRef(null);
     const resultRef = useRef(null);
 
@@ -38,9 +40,10 @@ const SoilDiagnosis = () => {
         if (file) {
             setReportFile(file);
             
-            // Show preview for PDF
+            // Show preview for PDF or images
             if (file.type === 'application/pdf') {
-                setFilePreview('/pdf-icon.png'); // Use a PDF icon image
+                // Create a visual representation for PDF
+                setFilePreview('pdf');
             } else if (file.type.startsWith('image/')) {
                 const reader = new FileReader();
                 reader.onload = () => {
@@ -52,46 +55,60 @@ const SoilDiagnosis = () => {
     };
 
     const onSubmit = async (data) => {
+        // Validate that basic info fields are filled (required fields)
+        if (!data.rainfall || !data.temp || !data.area || !data.irrigation) {
+            // Show error message
+            setBasicInfoError(true);
+            // Redirect to basic info tab
+            setActiveTab('basic');
+            // Scroll to form
+            if (formRef.current) {
+                formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            // Hide error after 5 seconds
+            setTimeout(() => setBasicInfoError(false), 5000);
+            return; // React Hook Form will show validation errors
+        }
+        
+        // Clear any previous error
+        setBasicInfoError(false);
         setLoading(true);
         setIsReportVisible(true);
         
         const irrigation = selectedOption === 'custom' ? data.customIrrigation : data.irrigation;
         
-        // Create a FormData object to hold the form data
+        // Create object for form data
+        const formDataObj = {
+            rainfall: data.rainfall,
+            temp: data.temp,
+            area: data.area,
+            irrigation: irrigation,
+        };
+        
+        if (data.soilType) formDataObj.soilType = data.soilType;
+        if (data.pH) formDataObj.pH = data.pH;
+        if (data.organicMatter) formDataObj.organicMatter = data.organicMatter;
+        if (data.nitrogen) formDataObj.nitrogen = data.nitrogen;
+        if (data.phosphorus) formDataObj.phosphorus = data.phosphorus;
+        if (data.potassium) formDataObj.potassium = data.potassium;
+        if (data.previousCrop) formDataObj.previousCrop = data.previousCrop;
+        if (data.cropRotation) formDataObj.cropRotation = data.cropRotation;
+        if (data.yearsOfFarming) formDataObj.yearsOfFarming = data.yearsOfFarming;
+        
+        // Create FormData for multipart upload
         const formData = new FormData();
-        
-        // Append basic info
-        formData.append('rainfall', data.rainfall);
-        formData.append('temp', data.temp);
-        formData.append('area', data.area);
-        formData.append('irrigation', irrigation);
-        
-        // Append soil properties if available
-        if (data.soilType) formData.append('soilType', data.soilType);
-        if (data.pH) formData.append('pH', data.pH);
-        if (data.organicMatter) formData.append('organicMatter', data.organicMatter);
-        if (data.nitrogen) formData.append('nitrogen', data.nitrogen);
-        if (data.phosphorus) formData.append('phosphorus', data.phosphorus);
-        if (data.potassium) formData.append('potassium', data.potassium);
-        
-        // Append cropping history if available
-        if (data.previousCrop) formData.append('previousCrop', data.previousCrop);
-        if (data.cropRotation) formData.append('cropRotation', data.cropRotation);
-        if (data.yearsOfFarming) formData.append('yearsOfFarming', data.yearsOfFarming);
         
         // Append the file
         if (reportFile) {
-            formData.append("report", reportFile);
+            formData.append("file", reportFile);
         }
+        
+        // Send form data as stringified JSON
+        formData.append("formData", JSON.stringify(formDataObj));
 
         try {
-            // First API call
-            await axios.post('http://localhost:8000/diagnosis/soil', formData, {
-                headers: { "Content-Type": "multipart/form-data" }
-            });
-            
-            // Second API call
-            const res = await axios.post('http://localhost:5123/report', formData, {
+            // Call the soil analysis API
+            const res = await axios.post('http://localhost:5000/report', formData, {
                 headers: { "Content-Type": "multipart/form-data" }
             });
             
@@ -282,6 +299,12 @@ const SoilDiagnosis = () => {
                                             </div>
                                         )}
                                     </div>
+                                    
+                                    <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                        <p className="text-sm text-blue-800">
+                                            <strong>Note:</strong> Basic information (rainfall, temperature, area, irrigation) is <strong>mandatory</strong> for soil analysis.
+                                        </p>
+                                    </div>
                                 </div>
                                 
                                 {/* Soil Properties */}
@@ -466,18 +489,53 @@ const SoilDiagnosis = () => {
                                 
                                 {/* Upload Report Tab */}
                                 <div className={activeTab === 'report' ? 'block' : 'hidden'}>
+                                    {/* Sample Report Link */}
+                                    <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center">
+                                                <FaFileAlt className="text-blue-600 text-xl mr-3" />
+                                                <div>
+                                                    <p className="text-sm font-medium text-blue-900">
+                                                        Need an example?
+                                                    </p>
+                                                    <p className="text-xs text-blue-700 mt-0.5">
+                                                        Download a sample soil test report to see the format
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <a
+                                                href="https://drive.google.com/file/d/1oNBdUsoq1ccm2rrWcexvUvH7T9DF5I3v/view?usp=sharing"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="ml-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm flex items-center gap-2 whitespace-nowrap"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                                Download Sample
+                                            </a>
+                                        </div>
+                                    </div>
+                                    
                                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center flex flex-col items-center">
                                         <div className="mb-4">
                                             {filePreview ? (
                                                 <div className="mx-auto w-24 h-24 mb-3 relative">
-                                                    <img 
-                                                        src={filePreview} 
-                                                        alt="File preview" 
-                                                        className="w-full h-full object-cover rounded-md shadow-sm"
-                                                    />
+                                                    {filePreview === 'pdf' ? (
+                                                        <div className="w-full h-full bg-red-50 border-2 border-red-300 rounded-md shadow-sm flex flex-col items-center justify-center">
+                                                            <FaFileAlt className="text-red-500 text-3xl" />
+                                                            <span className="text-xs text-red-600 font-semibold mt-1">PDF</span>
+                                                        </div>
+                                                    ) : (
+                                                        <img 
+                                                            src={filePreview} 
+                                                            alt="File preview" 
+                                                            className="w-full h-full object-cover rounded-md shadow-sm"
+                                                        />
+                                                    )}
                                                     <button 
                                                         type="button" 
-                                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-xs"
+                                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-xs w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors"
                                                         onClick={() => {
                                                             setReportFile(null);
                                                             setFilePreview('');
@@ -524,6 +582,31 @@ const SoilDiagnosis = () => {
                                 
                                 {/* Submit button - visible on all tabs */}
                                 <div className="pt-4 border-t border-gray-200 mt-6">
+                                    {/* Error message for missing basic info */}
+                                    {basicInfoError && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="mb-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-md"
+                                        >
+                                            <div className="flex items-start">
+                                                <div className="flex-shrink-0">
+                                                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                                    </svg>
+                                                </div>
+                                                <div className="ml-3">
+                                                    <p className="text-sm font-medium text-red-800">
+                                                        Please fill <strong>Basic Info</strong> in the first step as it is mandatory!
+                                                    </p>
+                                                    <p className="text-xs text-red-600 mt-1">
+                                                        Required: Rainfall, Temperature, Area, and Irrigation
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                    
                                     <button
                                         type="submit"
                                         disabled={isSubmitting || loading}
@@ -552,36 +635,74 @@ const SoilDiagnosis = () => {
                         </motion.div>
                     </div>
                 ) : (
-                    // Chat-style result section
-                    <div className="w-full flex justify-center items-center min-h-[60vh]">
-                        <div className="w-full max-w-2xl bg-white/95 p-8 rounded-2xl shadow-xl border border-green-100 flex flex-col gap-6">
-                            <div className="flex items-center gap-3 mb-4">
-                                <MdAnalytics className="text-green-600 text-2xl" />
-                                <h2 className="text-2xl font-bold text-green-700">Soil Analysis Chat</h2>
-                            </div>
-                            <div className="flex flex-col gap-6">
-                                {/* User message */}
-                                <div className="flex gap-3 items-start">
-                                    <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center font-bold text-green-700 text-lg">U</div>
-                                    <div className="bg-green-50 border border-green-100 rounded-xl px-5 py-3 text-slate-800 max-w-xl">
-                                        <span className="font-semibold">You:</span> Submitted soil data for analysis.
-                                    </div>
-                                </div>
-                                {/* AI response */}
-                                <div className="flex gap-3 items-start">
-                                    <div className="h-10 w-10 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center font-bold text-white text-lg">AI</div>
-                                    <div className="bg-gradient-to-br from-green-100 to-green-50 border border-green-200 rounded-xl px-5 py-3 text-green-900 max-w-xl whitespace-pre-line">
-                                        <span className="font-semibold">AgriTech AI:</span>
-                                        <div className="mt-2 text-base leading-relaxed">{report.answer}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <button
-                                className="self-end mt-4 px-6 py-2 rounded-lg bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold shadow-md transition-all"
-                                onClick={() => { setIsReportVisible(false); setReport({ answer: '' }); }}
+                    // Enhanced results section with better layout
+                    <div className="w-full flex justify-center items-start min-h-[60vh] py-8">
+                        <div className="w-full max-w-6xl flex flex-col gap-6">
+                            {/* Header Card */}
+                            <motion.div 
+                                initial={{ opacity: 0, y: -20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="bg-gradient-to-r from-green-600 to-green-700 p-6 rounded-2xl shadow-xl"
                             >
-                                Analyze Another Soil Sample
-                            </button>
+                                <div className="flex items-center gap-4 text-white">
+                                    <div className="bg-white/20 p-3 rounded-full">
+                                        <MdAnalytics className="text-3xl" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-3xl font-bold">Soil Analysis Report</h2>
+                                        <p className="text-green-50 mt-1">AI-powered insights for your soil health</p>
+                                    </div>
+                                </div>
+                            </motion.div>
+
+                            {/* Results Card with Enhanced Markdown */}
+                            <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 }}
+                                className="bg-white rounded-2xl shadow-xl border border-green-100 overflow-hidden"
+                            >
+                                <div className="bg-gradient-to-r from-green-50 to-green-100 px-8 py-4 border-b border-green-200">
+                                    <h3 className="text-xl font-semibold text-green-800">Detailed Analysis & Recommendations</h3>
+                                </div>
+                                
+                                <div className="p-8 lg:p-12">
+                                    <div className="prose prose-lg prose-green max-w-none
+                                        prose-headings:text-green-800 prose-headings:font-bold prose-headings:border-b prose-headings:border-green-200 prose-headings:pb-2 prose-headings:mb-4
+                                        prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl
+                                        prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-4
+                                        prose-strong:text-green-700 prose-strong:font-semibold
+                                        prose-ul:my-4 prose-ul:space-y-2
+                                        prose-li:text-gray-700 prose-li:leading-relaxed
+                                        prose-li:marker:text-green-600
+                                        prose-blockquote:border-l-4 prose-blockquote:border-green-500 prose-blockquote:bg-green-50 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:italic
+                                        prose-code:text-green-700 prose-code:bg-green-50 prose-code:px-2 prose-code:py-1 prose-code:rounded
+                                        prose-pre:bg-gray-50 prose-pre:border prose-pre:border-gray-200
+                                        prose-table:border-collapse prose-table:w-full
+                                        prose-th:bg-green-100 prose-th:border prose-th:border-green-300 prose-th:p-3 prose-th:text-left prose-th:font-semibold prose-th:text-green-800
+                                        prose-td:border prose-td:border-gray-300 prose-td:p-3
+                                        space-y-6"
+                                    >
+                                        <ReactMarkdown>{report.answer}</ReactMarkdown>
+                                    </div>
+                                </div>
+                            </motion.div>
+
+                            {/* Action Button */}
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.4 }}
+                                className="flex justify-center"
+                            >
+                                <button
+                                    className="px-8 py-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105 flex items-center gap-2"
+                                    onClick={() => { setIsReportVisible(false); setReport({ answer: '' }); }}
+                                >
+                                    <MdAnalytics className="text-xl" />
+                                    Analyze Another Soil Sample
+                                </button>
+                            </motion.div>
                         </div>
                     </div>
                 )}
