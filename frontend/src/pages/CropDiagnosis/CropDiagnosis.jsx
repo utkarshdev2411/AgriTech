@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   MdOutlineAddAPhoto, 
   MdAnalytics, 
@@ -18,7 +18,19 @@ function CropDiagnosis() {
   const [imagePreview, setImagePreview] = useState(null);
   const [predictionText, setPredictionText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showComingSoon, setShowComingSoon] = useState(false);
   const userInfo = useSelector(state => state.user.userInfo);
+  const resultsRef = useRef(null);
+  
+  // Auto-scroll to results when prediction is ready
+  useEffect(() => {
+    if (predictionText && !loading && resultsRef.current) {
+      resultsRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start'
+      });
+    }
+  }, [predictionText, loading]);
   
   const handleChange = (e) => {
     const file = e.target.files[0];
@@ -61,6 +73,13 @@ function CropDiagnosis() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleShareClick = () => {
+    setShowComingSoon(true);
+    setTimeout(() => {
+      setShowComingSoon(false);
+    }, 3000);
   };
 
   return (
@@ -182,6 +201,7 @@ function CropDiagnosis() {
           {/* Results Section */}
           {(predictionText || loading) && (
             <motion.div 
+              ref={resultsRef}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.5 }}
@@ -224,9 +244,25 @@ function CropDiagnosis() {
                       For additional treatment recommendations and advice, consider sharing this diagnosis with our farming community.
                     </p>
                     <div className="mt-3">
-                      <button className="px-4 py-2 text-xs font-medium text-amber-800 bg-amber-100 rounded-md hover:bg-amber-200 transition-colors">
+                      <button 
+                        onClick={handleShareClick}
+                        className="px-4 py-2 text-xs font-medium text-amber-800 bg-amber-100 rounded-md hover:bg-amber-200 transition-colors"
+                      >
                         Share with Community
                       </button>
+                      
+                      {/* Coming Soon Notification - Below Button */}
+                      {showComingSoon && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="mt-2 text-xs text-slate-500 italic"
+                        >
+                          Feature coming soon
+                        </motion.div>
+                      )}
                     </div>
                   </div>
                 </div>
