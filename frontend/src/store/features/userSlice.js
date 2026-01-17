@@ -50,7 +50,7 @@ const userSlice = createSlice({
                 state.loading = false
             })
             .addCase(getCurrentUserAPI.rejected, (state) => {
-                state.status = false
+                // Don't set status to false on rejection to prevent auto-logout on refresh
                 state.loading = false
             })
 

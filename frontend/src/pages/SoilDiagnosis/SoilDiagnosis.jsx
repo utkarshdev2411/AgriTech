@@ -16,7 +16,7 @@ const SoilDiagnosis = () => {
            formState: { errors, isSubmitting } } = useForm();
     
     const [isCustom, setIsCustom] = useState(false);
-    const [report, setReport] = useState({ answer: '' });
+    const [report, setReport] = useState({ result: '' });
     const [reportFile, setReportFile] = useState(null);
     const [filePreview, setFilePreview] = useState('');
     const [selectedOption, setSelectedOption] = useState('');
@@ -117,7 +117,7 @@ const SoilDiagnosis = () => {
         } catch (error) {
             console.error('Error submitting form:', error);
             setReport({ 
-                answer: 'Sorry, we encountered an error analyzing your soil data. Please try again later.' 
+                result: 'Sorry, we encountered an error analyzing your soil data. Please try again later.' 
             });
         } finally {
             setLoading(false);
@@ -153,8 +153,8 @@ const SoilDiagnosis = () => {
                         Enter your soil details below to receive a comprehensive analysis, recommendations for improvements, and suggested crops based on your soil conditions.
                     </p>
                 </div>
-                {/* Only show the form if not isReportVisible or no report.answer */}
-                {!(isReportVisible && report.answer) ? (
+                {/* Only show the form if not isReportVisible or no report.result */}
+                {!(isReportVisible && report.result) ? (
                     <div className="w-full flex justify-center items-start">
                         <motion.div 
                             initial={{ x: -20, opacity: 0 }}
@@ -684,7 +684,7 @@ const SoilDiagnosis = () => {
                                         prose-td:border prose-td:border-gray-300 prose-td:p-3
                                         space-y-6"
                                     >
-                                        <ReactMarkdown>{report.answer}</ReactMarkdown>
+                                        <ReactMarkdown>{report.result}</ReactMarkdown>
                                     </div>
                                 </div>
                             </motion.div>
@@ -698,7 +698,7 @@ const SoilDiagnosis = () => {
                             >
                                 <button
                                     className="px-8 py-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105 flex items-center gap-2"
-                                    onClick={() => { setIsReportVisible(false); setReport({ answer: '' }); }}
+                                    onClick={() => { setIsReportVisible(false); setReport({ result: '' }); }}
                                 >
                                     <MdAnalytics className="text-xl" />
                                     Analyze Another Soil Sample
